@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Signed in with a verified ALU email (student or staff).
+    function isAluUser() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@(alustudent|alueducation)[.]com$');
+    }
+
+    function isStaff() {
+      return isAluUser()
+        && request.auth.token.email.matches('.*@alueducation[.]com$');
+    }
+
+    function isOwner(report) {
+      return report.reporterId == request.auth.uid;
+    }
+
+    // Profiles: each person manages their own; staff can look people up.
+    match /users/{uid} {
+      allow read: if isAluUser() && (request.auth.uid == uid || isStaff());
+      allow create, update: if isAluUser() && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAluUser();
+
+      // New reports must belong to the sender and start as "submitted".
+      allow create: if isAluUser()
+        && isOwner(request.resource.data)
+        && request.resource.data.status == 'submitted';
+
+      // Students may edit their own report only while it is still
+      // "submitted"; staff handle status changes.
+      allow update: if isStaff()
+        || (isAluUser()
+            && isOwner(resource.data)
+            && resource.data.status == 'submitted'
+            && request.resource.data.status == 'submitted'
+            && request.resource.data.reporterId == resource.data.reporterId);
+
+      allow delete: if isAluUser()
+        && isOwner(resource.data)
+        && resource.data.status == 'submitted';
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
