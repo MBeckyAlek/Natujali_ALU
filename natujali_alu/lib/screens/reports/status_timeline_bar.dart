@@ -68,7 +68,7 @@ class _Step extends StatelessWidget {
     } else {
       circle = const CircleAvatar(
         radius: 12,
-        backgroundColor: AppColors.crimsonCard,
+        backgroundColor: AppColors.primaryTint,
       );
     }
 

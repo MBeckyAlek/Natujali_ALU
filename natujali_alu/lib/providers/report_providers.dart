@@ -1,21 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/fake_report_repository.dart';
+import '../data/firestore_report_repository.dart';
 import '../data/report_repository.dart';
 import '../models/report.dart';
 import '../models/report_filter.dart';
 import 'auth_providers.dart';
 
-/// Swap FakeReportRepository for the Firestore version here once it's ready.
+/// Use FakeReportRepository() here instead to run the app without Firebase.
 final reportRepositoryProvider = Provider<ReportRepository>(
-  (ref) => FakeReportRepository(),
+  (ref) => FirestoreReportRepository(),
 );
 
 /// Every campus report, kept live. All other report providers derive from
 /// this one, so a change made anywhere shows up on every screen.
-final reportsProvider = StreamProvider<List<Report>>(
-  (ref) => ref.watch(reportRepositoryProvider).watchReports(),
-);
+final reportsProvider = StreamProvider<List<Report>>((ref) {
+  // The security rules only let verified users read reports, so wait until
+  // someone is signed in and verified. Re-runs when that user changes.
+  final user = ref.watch(
+    currentUserProvider.select(
+      (u) => (uid: u?.uid, verified: u?.emailVerified),
+    ),
+  );
+  if (user.uid == null || user.verified != true) return Stream.value(const []);
+  return ref.watch(reportRepositoryProvider).watchReports();
+});
 
 /// Reports submitted by the signed-in student.
 final myReportsProvider = Provider<AsyncValue<List<Report>>>((ref) {

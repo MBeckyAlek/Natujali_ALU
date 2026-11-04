@@ -175,10 +175,11 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Navy card with a red bar, echoing the ALU logo.
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.crimsonCard,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -187,7 +188,7 @@ class _WelcomeCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
@@ -199,25 +200,28 @@ class _WelcomeCard extends StatelessWidget {
           const Text(
             'A better campus,\none report at a time.',
             style: TextStyle(
+              color: Colors.white,
               fontSize: 26,
               fontWeight: FontWeight.w800,
               height: 1.2,
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
+          Container(width: 48, height: 4, color: AppColors.accent),
+          const SizedBox(height: 12),
+          Text(
             'Spot an issue. Share it in minutes. Follow every step toward a fix.',
-            style: TextStyle(color: AppColors.muted),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
           ),
           const SizedBox(height: 10),
           const Row(
             children: [
-              Icon(Icons.shield_outlined, size: 16, color: AppColors.primary),
+              Icon(Icons.shield_outlined, size: 16, color: Colors.white),
               SizedBox(width: 6),
               Text(
                 'Your campus. A shared responsibility.',
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),

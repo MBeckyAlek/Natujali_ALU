@@ -53,7 +53,7 @@ class _CategoryTile extends StatelessWidget {
       selected: selected,
       button: true,
       child: Material(
-        color: selected ? AppColors.primary : AppColors.crimsonCard,
+        color: selected ? AppColors.primary : AppColors.primaryTint,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),

@@ -19,9 +19,8 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
     );
 
-    final inter = GoogleFonts.interTextTheme(
-      base.textTheme,
-    ).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
+    final inter = GoogleFonts.interTextTheme(base.textTheme)
+        .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
     final textTheme = inter.copyWith(
       headlineSmall: inter.headlineSmall?.copyWith(
         fontSize: 26,
@@ -41,12 +40,12 @@ class AppTheme {
         fontSize: 12,
         color: AppColors.muted,
       ),
-      // Used for the small red "eyebrow" labels above page titles.
+      // Used for the small red "eyebrow" labels above page titles (ALU red).
       labelSmall: inter.labelSmall?.copyWith(
         fontSize: 11,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
-        color: AppColors.primary,
+        color: AppColors.accent,
       ),
     );
 
@@ -84,15 +83,15 @@ class AppTheme {
         border: inputBorder(AppColors.border),
         enabledBorder: inputBorder(AppColors.border),
         focusedBorder: inputBorder(AppColors.primary, 1.5),
-        errorBorder: inputBorder(AppColors.primary),
-        focusedErrorBorder: inputBorder(AppColors.primary, 1.5),
-        errorStyle: const TextStyle(color: AppColors.primary),
+        errorBorder: inputBorder(AppColors.accent),
+        focusedErrorBorder: inputBorder(AppColors.accent, 1.5),
+        errorStyle: const TextStyle(color: AppColors.accent),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.crimsonCard,
+          disabledBackgroundColor: AppColors.primaryTint,
           disabledForegroundColor: AppColors.primary.withValues(alpha: 0.6),
           minimumSize: const Size.fromHeight(52),
           shape: buttonShape,

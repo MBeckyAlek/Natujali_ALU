@@ -274,7 +274,7 @@ class _ErrorText extends StatelessWidget {
       padding: const EdgeInsets.only(top: 6),
       child: Text(
         message,
-        style: const TextStyle(color: AppColors.primary, fontSize: 12),
+        style: const TextStyle(color: AppColors.accent, fontSize: 12),
       ),
     );
   }

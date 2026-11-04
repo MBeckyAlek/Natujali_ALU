@@ -109,7 +109,7 @@ class _TimelineStep extends StatelessWidget {
               CircleAvatar(
                 radius: 14,
                 backgroundColor: isReached
-                    ? AppColors.crimsonCard
+                    ? AppColors.primaryTint
                     : AppColors.surface,
                 child: Icon(
                   isCurrent

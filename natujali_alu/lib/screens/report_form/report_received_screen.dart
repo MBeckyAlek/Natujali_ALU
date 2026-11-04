@@ -32,7 +32,7 @@ class ReportReceivedScreen extends ConsumerWidget {
             const Center(
               child: CircleAvatar(
                 radius: 44,
-                backgroundColor: AppColors.crimsonCard,
+                backgroundColor: AppColors.primaryTint,
                 child: Icon(
                   Icons.check_circle_outline,
                   size: 44,

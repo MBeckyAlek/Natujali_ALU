@@ -85,11 +85,11 @@ class _ReportButton extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: AppColors.accent,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.35),
+                    color: AppColors.accent.withValues(alpha: 0.35),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -101,7 +101,7 @@ class _ReportButton extends StatelessWidget {
             const Text(
               'Report',
               style: TextStyle(
-                color: AppColors.primary,
+                color: AppColors.accent,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),

@@ -119,7 +119,7 @@ class _NotificationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
-        color: unread ? AppColors.crimsonCard : AppColors.surface,
+        color: unread ? AppColors.primaryTint : AppColors.surface,
         onTap: () => ReportDetailsScreen.open(context, report.id),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

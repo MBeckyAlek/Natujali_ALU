@@ -26,7 +26,7 @@ class InfoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWarning = tone == BannerTone.warning;
-    final background = isWarning ? AppColors.amber : AppColors.crimsonCard;
+    final background = isWarning ? AppColors.amber : AppColors.primaryTint;
     final foreground = isWarning ? AppColors.amberText : AppColors.primary;
 
     return Container(

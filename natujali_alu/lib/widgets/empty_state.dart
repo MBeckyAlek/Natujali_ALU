@@ -24,7 +24,7 @@ class EmptyState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.crimsonCard,
+        color: AppColors.primaryTint,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

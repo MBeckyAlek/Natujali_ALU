@@ -16,7 +16,7 @@ class ReportThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placeholder = Container(
-      color: AppColors.crimsonCard,
+      color: AppColors.primaryTint,
       child: Icon(
         report.category.icon,
         color: AppColors.primary,

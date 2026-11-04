@@ -19,7 +19,7 @@ class ReportSummaryRow extends StatelessWidget {
       _StatTile(
         reports.length,
         'My reports',
-        AppColors.crimsonCard,
+        AppColors.primaryTint,
         AppColors.primary,
       ),
       _StatTile(
@@ -33,8 +33,8 @@ class ReportSummaryRow extends StatelessWidget {
           (s) => s == ReportStatus.underReview || s == ReportStatus.inProgress,
         ),
         'In progress',
-        AppColors.blue,
-        AppColors.blueText,
+        AppColors.accentTint,
+        AppColors.accent,
       ),
       _StatTile(
         _count((s) => s == ReportStatus.resolved),

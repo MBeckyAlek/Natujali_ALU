@@ -78,7 +78,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
-                  color: AppColors.crimsonCard,
+                  color: AppColors.primaryTint,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

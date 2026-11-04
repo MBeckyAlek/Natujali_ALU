@@ -13,8 +13,8 @@ class StatusChip extends StatelessWidget {
   static (Color background, Color foreground) colorsFor(ReportStatus status) {
     return switch (status) {
       ReportStatus.submitted => (AppColors.amber, AppColors.amberText),
-      ReportStatus.underReview => (AppColors.blue, AppColors.blueText),
-      ReportStatus.inProgress => (AppColors.crimsonCard, AppColors.primary),
+      ReportStatus.underReview => (AppColors.purple, AppColors.purpleText),
+      ReportStatus.inProgress => (AppColors.accentTint, AppColors.accent),
       ReportStatus.resolved => (AppColors.green, AppColors.greenText),
     };
   }
