@@ -100,8 +100,8 @@ class _ReportPromptCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryLight],
+        gradient: LinearGradient(
+          colors: [context.colors.primary, context.colors.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -143,7 +143,7 @@ class _ReportPromptCard extends StatelessWidget {
           FilledButton.icon(
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
+              foregroundColor: context.colors.primary,
             ),
             onPressed: onReport,
             icon: const Icon(Icons.add),

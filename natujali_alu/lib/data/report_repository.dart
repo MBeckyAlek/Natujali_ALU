@@ -14,4 +14,13 @@ abstract class ReportRepository {
   Future<void> updateReport(String reportId, ReportInput input);
 
   Future<void> deleteReport(String reportId);
+
+  /// Staff only: moves a report to [status] and adds [note] to its history,
+  /// which also shows up in the student's notifications.
+  Future<void> updateStatus(
+    String reportId, {
+    required ReportStatus status,
+    required String note,
+    String? assignedTeam,
+  });
 }

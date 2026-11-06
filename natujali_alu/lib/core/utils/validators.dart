@@ -64,4 +64,13 @@ class Validators {
     }
     return null;
   }
+
+  static String? statusNote(String? value) {
+    final note = value?.trim() ?? '';
+    if (note.length < 10) {
+      return 'Write a short note for the student (at least 10 characters).';
+    }
+    if (note.length > 500) return 'Keep the note under 500 characters.';
+    return null;
+  }
 }

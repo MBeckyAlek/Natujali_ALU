@@ -1,18 +1,24 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/app_user.dart';
 import '../models/report.dart';
+import '../services/cloudinary_service.dart';
 import 'report_repository.dart';
 
 /// Incident reports stored in the Firestore `reports` collection.
 ///
-/// Photos are not uploaded yet: that needs Firebase Storage, which comes with
-/// the Blaze plan. Until then a photo only shows on the device that took it.
+/// Photos are uploaded to Cloudinary first; only their URL is saved here.
 class FirestoreReportRepository implements ReportRepository {
-  FirestoreReportRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreReportRepository({
+    FirebaseFirestore? firestore,
+    CloudinaryService? cloudinary,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _cloudinary = cloudinary ?? CloudinaryService();
 
   final FirebaseFirestore _firestore;
+  final CloudinaryService _cloudinary;
 
   CollectionReference<Map<String, dynamic>> get _reports =>
       _firestore.collection('reports');
@@ -31,6 +37,7 @@ class FirestoreReportRepository implements ReportRepository {
     required AppUser reporter,
   }) async {
     final doc = _reports.doc();
+    final photoUrl = await _uploadIfNeeded(input.photoPath);
     final now = DateTime.now();
     final report = Report(
       id: doc.id,
@@ -41,6 +48,7 @@ class FirestoreReportRepository implements ReportRepository {
       category: input.category,
       building: input.building,
       landmark: input.landmark,
+      photoPath: photoUrl,
       status: ReportStatus.submitted,
       reporterId: reporter.uid,
       createdAt: now,
@@ -59,19 +67,55 @@ class FirestoreReportRepository implements ReportRepository {
   }
 
   @override
-  Future<void> updateReport(String reportId, ReportInput input) {
-    return _reports.doc(reportId).update({
+  Future<void> updateReport(String reportId, ReportInput input) async {
+    final photoUrl = await _uploadIfNeeded(input.photoPath);
+    await _reports.doc(reportId).update({
       'title': input.title,
       'description': input.description,
       'category': input.category.name,
       'building': input.building,
       'landmark': input.landmark,
+      'photoUrl': photoUrl,
       'updatedAt': Timestamp.now(),
     });
   }
 
+  /// A photo just picked on this device is uploaded and its URL returned.
+  /// One that is already a URL (an unchanged photo on an edit) is kept.
+  Future<String?> _uploadIfNeeded(String? photoPath) async {
+    if (photoPath == null || photoPath.startsWith('http')) return photoPath;
+    return _cloudinary.uploadImage(File(photoPath));
+  }
+
   @override
   Future<void> deleteReport(String reportId) => _reports.doc(reportId).delete();
+
+  @override
+  Future<void> updateStatus(
+    String reportId, {
+    required ReportStatus status,
+    required String note,
+    String? assignedTeam,
+  }) async {
+    final doc = _reports.doc(reportId);
+    final current = await doc.get();
+    final team = assignedTeam ?? current.data()?['assignedTeam'] as String?;
+    final now = Timestamp.now();
+    await doc.update({
+      'status': status.name,
+      'assignedTeam': team,
+      'updatedAt': now,
+      // arrayUnion appends without rewriting the existing history.
+      'history': FieldValue.arrayUnion([
+        {
+          'status': status.name,
+          'note': note,
+          'updatedBy': team ?? campusOperationsName,
+          'at': now,
+        },
+      ]),
+    });
+  }
 
   Map<String, dynamic> _toMap(Report report) {
     return {
@@ -81,6 +125,7 @@ class FirestoreReportRepository implements ReportRepository {
       'category': report.category.name,
       'building': report.building,
       'landmark': report.landmark,
+      'photoUrl': report.photoPath,
       'status': report.status.name,
       'reporterId': report.reporterId,
       'assignedTeam': report.assignedTeam,
@@ -108,6 +153,7 @@ class FirestoreReportRepository implements ReportRepository {
       category: ReportCategory.values.byName(data['category'] as String),
       building: data['building'] as String,
       landmark: data['landmark'] as String? ?? '',
+      photoPath: data['photoUrl'] as String?,
       status: ReportStatus.values.byName(data['status'] as String),
       reporterId: data['reporterId'] as String,
       assignedTeam: data['assignedTeam'] as String?,

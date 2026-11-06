@@ -47,7 +47,7 @@ class TrackReportScreen extends ConsumerWidget {
                   ),
                   Text(
                     report.location,
-                    style: const TextStyle(color: AppColors.muted),
+                    style: TextStyle(color: context.colors.muted),
                   ),
                 ],
               ),
@@ -98,7 +98,7 @@ class _TimelineStep extends StatelessWidget {
     final entry = report.history
         .where((update) => update.status == status)
         .lastOrNull;
-    final color = isReached ? AppColors.primary : AppColors.muted;
+    final color = isReached ? context.colors.primary : context.colors.muted;
 
     return IntrinsicHeight(
       child: Row(
@@ -109,8 +109,8 @@ class _TimelineStep extends StatelessWidget {
               CircleAvatar(
                 radius: 14,
                 backgroundColor: isReached
-                    ? AppColors.primaryTint
-                    : AppColors.surface,
+                    ? context.colors.primaryTint
+                    : context.colors.surface,
                 child: Icon(
                   isCurrent
                       ? Icons.radio_button_checked
@@ -124,8 +124,8 @@ class _TimelineStep extends StatelessWidget {
                   child: Container(
                     width: 2,
                     color: status.index < report.status.index
-                        ? AppColors.primary
-                        : AppColors.border,
+                        ? context.colors.primary
+                        : context.colors.border,
                   ),
                 ),
             ],
@@ -145,15 +145,17 @@ class _TimelineStep extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: isReached ? AppColors.ink : AppColors.muted,
+                            color: isReached
+                                ? context.colors.ink
+                                : context.colors.muted,
                           ),
                         ),
                       ),
                       if (isCurrent)
-                        const Text(
+                        Text(
                           'CURRENT',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                           ),
@@ -171,7 +173,7 @@ class _TimelineStep extends StatelessWidget {
                   ] else
                     Text(
                       isReached ? 'Completed' : 'Not yet reached',
-                      style: const TextStyle(color: AppColors.muted),
+                      style: TextStyle(color: context.colors.muted),
                     ),
                 ],
               ),

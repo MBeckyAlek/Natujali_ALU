@@ -10,19 +10,29 @@ service cloud.firestore {
         && request.auth.token.email.matches('.*@(alustudent|alueducation)[.]com$');
     }
 
+    // Staff have an @alueducation.com email, or were added by an admin as a
+    // document in the `staff` collection (Firebase console only).
     function isStaff() {
       return isAluUser()
-        && request.auth.token.email.matches('.*@alueducation[.]com$');
+        && (request.auth.token.email.matches('.*@alueducation[.]com$')
+            || exists(/databases/$(database)/documents/staff/$(request.auth.uid)));
     }
 
     function isOwner(report) {
       return report.reporterId == request.auth.uid;
     }
 
-    // Profiles: each person manages their own; staff can look people up.
+    // Signed in with an ALU email, verified or not yet.
+    function isAluAccount() {
+      return request.auth != null
+        && request.auth.token.email.matches('.*@(alustudent|alueducation)[.]com$');
+    }
+
+    // Profiles: each person manages their own (saved at registration,
+    // before the email is verified); staff can look people up.
     match /users/{uid} {
-      allow read: if isAluUser() && (request.auth.uid == uid || isStaff());
-      allow create, update: if isAluUser() && request.auth.uid == uid;
+      allow read: if (isAluAccount() && request.auth.uid == uid) || isStaff();
+      allow create, update: if isAluAccount() && request.auth.uid == uid;
       allow delete: if false;
     }
 
@@ -36,7 +46,8 @@ service cloud.firestore {
 
       // Students may edit their own report only while it is still
       // "submitted"; staff handle status changes.
-      allow update: if isStaff()
+      allow update: if (isStaff()
+            && request.resource.data.reporterId == resource.data.reporterId)
         || (isAluUser()
             && isOwner(resource.data)
             && resource.data.status == 'submitted'
@@ -46,6 +57,13 @@ service cloud.firestore {
       allow delete: if isAluUser()
         && isOwner(resource.data)
         && resource.data.status == 'submitted';
+    }
+
+    // Staff list: people can check their own entry; only admins (via the
+    // Firebase console) can add or remove staff.
+    match /staff/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
     }
 
     // Everything else is closed.

@@ -71,6 +71,30 @@ class FakeReportRepository implements ReportRepository {
     _emit();
   }
 
+  @override
+  Future<void> updateStatus(
+    String reportId, {
+    required ReportStatus status,
+    required String note,
+    String? assignedTeam,
+  }) async {
+    await _simulateNetwork();
+    final index = _reports.indexWhere((report) => report.id == reportId);
+    if (index == -1) throw StateError('Report $reportId not found');
+    final update = StatusUpdate(
+      status: status,
+      note: note,
+      updatedBy:
+          assignedTeam ?? _reports[index].assignedTeam ?? campusOperationsName,
+      at: DateTime.now(),
+    );
+    _reports[index] = _reports[index].withStatusUpdate(
+      update,
+      assignedTeam: assignedTeam,
+    );
+    _emit();
+  }
+
   List<Report> _sortedReports() =>
       [..._reports]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -134,14 +158,14 @@ List<Report> _seedReports() {
       number: 2031,
       title: 'Water shortage',
       description:
-          'The taps in Student Residence have had no running water since this '
+          'The taps in Social Commons have had no running water since this '
           'morning. Residents on floors 2 and 3 are unable to access water for basic needs.',
       category: ReportCategory.water,
-      building: 'Student Residence',
-      landmark: 'Block B',
+      building: 'Social Commons',
+      landmark: '2nd floor washrooms',
       reporterId: me,
       age: const Duration(hours: 2),
-      assignedTeam: 'Facilities · Water & Utilities',
+      assignedTeam: 'Plumbing',
       history: [
         update(
           ReportStatus.submitted,
@@ -171,7 +195,7 @@ List<Report> _seedReports() {
           'The lights along the ground floor corridor keep flickering on and off, '
           'which makes it hard to see in the evening.',
       category: ReportCategory.electricity,
-      building: 'Library',
+      building: 'Learning Commons',
       landmark: 'Ground floor corridor',
       reporterId: me,
       age: const Duration(minutes: 40),
@@ -191,7 +215,7 @@ List<Report> _seedReports() {
           'One of the chairs in the quiet study area has a cracked leg and wobbles '
           'badly when you sit on it.',
       category: ReportCategory.furniture,
-      building: 'Library',
+      building: 'Learning Commons',
       landmark: 'Quiet study area',
       reporterId: 'student-2',
       age: const Duration(hours: 5),
@@ -211,11 +235,11 @@ List<Report> _seedReports() {
           'The projector in Room 204 does not turn on. Lecturers have had to '
           'cancel slides for the last two classes.',
       category: ReportCategory.facilities,
-      building: 'Lecture Block B',
+      building: 'Learning Commons',
       landmark: 'Room 204',
       reporterId: me,
       age: const Duration(days: 1),
-      assignedTeam: 'IT Support',
+      assignedTeam: 'IT & AV',
       history: [
         update(
           ReportStatus.submitted,
@@ -238,11 +262,11 @@ List<Report> _seedReports() {
           'The handrail on the main staircase between the first and second floor '
           'is loose and moves when people lean on it.',
       category: ReportCategory.safety,
-      building: 'Main Building',
+      building: 'Enterprise Commons',
       landmark: 'Main staircase',
       reporterId: 'student-3',
       age: const Duration(days: 2),
-      assignedTeam: 'Campus Safety',
+      assignedTeam: 'Security',
       history: [
         update(
           ReportStatus.submitted,
@@ -253,13 +277,13 @@ List<Report> _seedReports() {
         update(
           ReportStatus.underReview,
           'Campus Safety has taped off the area.',
-          'Campus Safety',
+          'Security',
           const Duration(days: 2),
         ),
         update(
           ReportStatus.inProgress,
           'A contractor is booked to secure the handrail.',
-          'Campus Safety',
+          'Security',
           const Duration(days: 1),
         ),
       ],
@@ -271,11 +295,11 @@ List<Report> _seedReports() {
           'The bins outside the cafeteria are overflowing and rubbish is spreading '
           'across the walkway.',
       category: ReportCategory.sanitation,
-      building: 'Cafeteria',
+      building: 'Social Commons',
       landmark: 'Outside entrance',
       reporterId: me,
       age: const Duration(days: 3),
-      assignedTeam: 'Cleaning Services',
+      assignedTeam: 'Cleaning',
       history: [
         update(
           ReportStatus.submitted,
@@ -286,19 +310,19 @@ List<Report> _seedReports() {
         update(
           ReportStatus.underReview,
           'Cleaning Services has been notified.',
-          'Cleaning Services',
+          'Cleaning',
           const Duration(days: 3),
         ),
         update(
           ReportStatus.inProgress,
           'A team is on the way to clear the bins.',
-          'Cleaning Services',
+          'Cleaning',
           const Duration(days: 3),
         ),
         update(
           ReportStatus.resolved,
           'A cleaner campus. Thank you! The overflowing bins by the cafeteria have been cleared.',
-          'Cleaning Services',
+          'Cleaning',
           const Duration(days: 2, hours: 20),
         ),
       ],
@@ -310,10 +334,10 @@ List<Report> _seedReports() {
           'Water drips from the ceiling onto the electronics workbench whenever '
           'it rains. We have put a bucket under it for now.',
       category: ReportCategory.facilities,
-      building: 'Innovation Lab',
+      building: 'Enterprise Commons',
       reporterId: 'student-4',
       age: const Duration(days: 6),
-      assignedTeam: 'Facilities · Maintenance',
+      assignedTeam: 'Facilities',
       history: [
         update(
           ReportStatus.submitted,
@@ -324,16 +348,109 @@ List<Report> _seedReports() {
         update(
           ReportStatus.inProgress,
           'Roofers are sealing the damaged section.',
-          'Facilities · Maintenance',
+          'Facilities',
           const Duration(days: 5),
         ),
         update(
           ReportStatus.resolved,
           'The roof has been sealed and the bench is dry.',
-          'Facilities · Maintenance',
+          'Facilities',
           const Duration(days: 4),
         ),
       ],
     ),
+    ..._pastMonthReports(now),
   ];
+}
+
+/// About a month of older reports, so the staff dashboard charts have a
+/// realistic spread to show. Generated from fixed patterns, not random
+/// numbers, so tests see the same data every run.
+List<Report> _pastMonthReports(DateTime now) {
+  const categories = [
+    ReportCategory.facilities,
+    ReportCategory.water,
+    ReportCategory.sanitation,
+    ReportCategory.facilities,
+    ReportCategory.electricity,
+    ReportCategory.furniture,
+    ReportCategory.facilities,
+    ReportCategory.safety,
+    ReportCategory.water,
+    ReportCategory.sanitation,
+  ];
+  const titles = {
+    ReportCategory.facilities: 'Door handle broken',
+    ReportCategory.water: 'Leaking tap',
+    ReportCategory.electricity: 'Socket not working',
+    ReportCategory.furniture: 'Wobbly desk',
+    ReportCategory.sanitation: 'Washroom needs cleaning',
+    ReportCategory.safety: 'Fire exit sign unlit',
+  };
+  const teams = {
+    ReportCategory.facilities: 'Facilities',
+    ReportCategory.water: 'Plumbing',
+    ReportCategory.electricity: 'Electrical',
+    ReportCategory.furniture: 'Facilities',
+    ReportCategory.sanitation: 'Cleaning',
+    ReportCategory.safety: 'Security',
+  };
+
+  Report sample(int i) {
+    final category = categories[i % categories.length];
+    final team = teams[category]!;
+    final createdAt = now.subtract(
+      Duration(days: 2 + (i * 11) % 28, hours: (i * 5) % 12),
+    );
+    final fixTime = Duration(hours: 8 + (i * 13) % 80);
+    // Every sixth report is still open, as are fixes that would end in the future.
+    final isResolved = i % 6 != 0 && createdAt.add(fixTime).isBefore(now);
+    final history = [
+      StatusUpdate(
+        status: ReportStatus.submitted,
+        note: 'Your report is safely submitted. We will keep you updated.',
+        updatedBy: 'Natujali',
+        at: createdAt,
+      ),
+      StatusUpdate(
+        status: ReportStatus.underReview,
+        note: '$team has the report and will take a look.',
+        updatedBy: team,
+        at: createdAt.add(const Duration(hours: 3)),
+      ),
+      StatusUpdate(
+        status: ReportStatus.inProgress,
+        note: 'Work on this has started.',
+        updatedBy: team,
+        at: createdAt.add(fixTime ~/ 2),
+      ),
+      if (isResolved)
+        StatusUpdate(
+          status: ReportStatus.resolved,
+          note: 'This has been fixed. Thank you for reporting it.',
+          updatedBy: team,
+          at: createdAt.add(fixTime),
+        ),
+    ];
+    final number = 900 + i;
+    return Report(
+      id: 'report-$number',
+      reference: 'NJ-$number',
+      title: titles[category]!,
+      description:
+          'Sample report used to fill the staff dashboard with realistic '
+          'activity from the past month.',
+      category: category,
+      building: campusBuildings[i % campusBuildings.length],
+      landmark: '',
+      status: history.last.status,
+      reporterId: 'student-${5 + i % 4}',
+      assignedTeam: team,
+      createdAt: createdAt,
+      updatedAt: history.last.at,
+      history: history,
+    );
+  }
+
+  return [for (var i = 0; i < 36; i++) sample(i)];
 }

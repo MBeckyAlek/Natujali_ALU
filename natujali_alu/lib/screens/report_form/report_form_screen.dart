@@ -45,7 +45,10 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
     text: widget.existing?.landmark,
   );
   late ReportCategory? _category = widget.existing?.category;
-  late String? _building = widget.existing?.building;
+  // Reports filed before the building list changed start with no choice.
+  late String? _building = campusBuildings.contains(widget.existing?.building)
+      ? widget.existing!.building
+      : null;
   late String? _photoPath = widget.existing?.photoPath;
   bool _confirmedAccurate = false;
   bool _submitAttempted = false;
@@ -167,14 +170,16 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                 maxLines: 8,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
-                  hintText: 'What happened, when, and who is affected?',
+                  hintText:
+                      'What happened, when, and exactly where in the building '
+                      '(floor, room or nearby landmark)?',
                 ),
                 validator: Validators.reportDescription,
               ),
-              const FieldLabel('Building or area *'),
+              const FieldLabel('Building *'),
               DropdownButtonFormField<String>(
                 initialValue: _building,
-                hint: const Text('Choose a location'),
+                hint: const Text('Choose a building'),
                 items: [
                   for (final building in campusBuildings)
                     DropdownMenuItem(value: building, child: Text(building)),
@@ -183,12 +188,12 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                 validator: (value) =>
                     value == null ? 'Choose where the issue is.' : null,
               ),
-              const FieldLabel('Room or landmark', trailing: 'Optional'),
+              const FieldLabel('Floor and room', trailing: 'Optional'),
               TextFormField(
                 controller: _landmarkController,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
-                  hintText: 'e.g. Washroom beside Lab G02',
+                  hintText: 'e.g. 2nd floor, washroom beside the lift',
                 ),
               ),
               if (similar.isNotEmpty) ...[
@@ -251,7 +256,9 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                     : const Icon(Icons.send_outlined),
                 label: Text(
                   _isSubmitting
-                      ? 'Submitting report…'
+                      ? (_photoPath?.startsWith('http') == false
+                            ? 'Uploading photo…'
+                            : 'Submitting report…')
                       : (_isEditing ? 'Save changes' : 'Submit report'),
                 ),
               ),
@@ -274,7 +281,7 @@ class _ErrorText extends StatelessWidget {
       padding: const EdgeInsets.only(top: 6),
       child: Text(
         message,
-        style: const TextStyle(color: AppColors.accent, fontSize: 12),
+        style: TextStyle(color: context.colors.accent, fontSize: 12),
       ),
     );
   }

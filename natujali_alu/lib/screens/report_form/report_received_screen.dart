@@ -29,14 +29,14 @@ class ReportReceivedScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           children: [
             const ScreenHeader(title: 'Report received', showBack: true),
-            const Center(
+            Center(
               child: CircleAvatar(
                 radius: 44,
-                backgroundColor: AppColors.primaryTint,
+                backgroundColor: context.colors.primaryTint,
                 child: Icon(
                   Icons.check_circle_outline,
                   size: 44,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               ),
             ),
@@ -47,10 +47,10 @@ class ReportReceivedScreen extends ConsumerWidget {
               style: textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Your report is safely submitted. The campus team will review it next.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.muted),
+              style: TextStyle(color: context.colors.muted),
             ),
             const SizedBox(height: 24),
             AppCard(
@@ -63,8 +63,8 @@ class ReportReceivedScreen extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           report.reference,
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: context.colors.primary,
                             fontSize: 30,
                             fontWeight: FontWeight.w800,
                           ),
@@ -72,7 +72,7 @@ class ReportReceivedScreen extends ConsumerWidget {
                       ),
                       IconButton(
                         tooltip: 'Copy reference',
-                        icon: const Icon(Icons.copy, color: AppColors.primary),
+                        icon: Icon(Icons.copy, color: context.colors.primary),
                         onPressed: () {
                           Clipboard.setData(
                             ClipboardData(text: report.reference),
@@ -96,11 +96,11 @@ class ReportReceivedScreen extends ConsumerWidget {
                   DetailRow(label: 'Reported by', value: user?.fullName ?? ''),
                   Row(
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 110,
                         child: Text(
                           'Status',
-                          style: TextStyle(color: AppColors.muted),
+                          style: TextStyle(color: context.colors.muted),
                         ),
                       ),
                       StatusChip(status: report.status),
@@ -158,10 +158,10 @@ class _NextStep extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.primary),
+          Icon(icon, size: 20, color: context.colors.primary),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text, style: const TextStyle(color: AppColors.muted)),
+            child: Text(text, style: TextStyle(color: context.colors.muted)),
           ),
         ],
       ),

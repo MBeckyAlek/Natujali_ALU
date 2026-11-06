@@ -53,7 +53,7 @@ class _MyReportsScreenState extends ConsumerState<MyReportsScreen> {
               showBack: true,
               trailing: IconButton(
                 tooltip: 'Report an issue',
-                color: AppColors.primary,
+                color: context.colors.primary,
                 icon: const Icon(Icons.add),
                 onPressed: () => ReportFormScreen.open(context),
               ),
@@ -72,9 +72,9 @@ class _MyReportsScreenState extends ConsumerState<MyReportsScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Every report is a step toward a better campus.',
-              style: TextStyle(color: AppColors.muted),
+              style: TextStyle(color: context.colors.muted),
             ),
             const SizedBox(height: 16),
             SingleChildScrollView(

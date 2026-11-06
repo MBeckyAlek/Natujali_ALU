@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../widgets/report_photo.dart';
 
 const _maxPhotoBytes = 5 * 1024 * 1024;
 const _allowedExtensions = ['.jpg', '.jpeg', '.png'];
@@ -87,21 +86,21 @@ class PhotoPickerField extends StatelessWidget {
             height: 96,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.colors.border),
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.add_photo_alternate_outlined,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
                 SizedBox(height: 6),
                 Text(
                   'A photo helps staff find the issue faster',
-                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                  style: TextStyle(color: context.colors.muted, fontSize: 12),
                 ),
               ],
             ),
@@ -109,9 +108,9 @@ class PhotoPickerField extends StatelessWidget {
           const SizedBox(height: 10),
           buttons,
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'JPG or PNG, up to 5 MB.',
-            style: TextStyle(color: AppColors.muted, fontSize: 12),
+            style: TextStyle(color: context.colors.muted, fontSize: 12),
           ),
         ],
       );
@@ -121,12 +120,7 @@ class PhotoPickerField extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
-          child: Image.file(
-            File(path),
-            height: 180,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
+          child: ReportPhoto(path: path, height: 180, width: double.infinity),
         ),
         const SizedBox(height: 10),
         buttons,

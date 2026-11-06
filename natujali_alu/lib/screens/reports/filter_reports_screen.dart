@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/formatters.dart';
 import '../../models/report.dart';
 import '../../models/report_filter.dart';
 import '../../providers/report_providers.dart';
@@ -10,7 +11,7 @@ import '../../widgets/field_label.dart';
 import '../../widgets/info_banner.dart';
 import '../../widgets/screen_header.dart';
 
-/// Lets the student pick categories, statuses and a building. Choices are
+/// Lets the student pick categories, statuses, a building and a month. Choices are
 /// kept locally until "Show N reports" applies them to the shared filter.
 class FilterReportsScreen extends ConsumerStatefulWidget {
   const FilterReportsScreen({super.key});
@@ -25,12 +26,14 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
   late final Set<ReportCategory> _categories = {..._initial.categories};
   late final Set<ReportStatus> _statuses = {..._initial.statuses};
   late String? _building = _initial.building;
+  late DateTime? _month = _initial.month;
 
   ReportFilter get _draft => ReportFilter(
     query: _initial.query,
     categories: _categories,
     statuses: _statuses,
     building: _building,
+    month: _month,
   );
 
   void _toggle<T>(Set<T> set, T value) {
@@ -47,6 +50,7 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
       _categories.clear();
       _statuses.clear();
       _building = null;
+      _month = null;
     });
   }
 
@@ -54,6 +58,9 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
   Widget build(BuildContext context) {
     final allReports = ref.watch(reportsProvider).value ?? const [];
     final matchCount = _draft.apply(allReports).length;
+    // Keep the chosen month listed even if its reports have since gone.
+    final months = reportMonths(allReports);
+    if (_month != null && !months.contains(_month)) months.insert(0, _month!);
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -66,15 +73,15 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
               title: 'Filter reports',
               showBack: true,
             ),
-            const Text(
+            Text(
               'Narrow the list to the issues that matter to you.',
-              style: TextStyle(color: AppColors.muted),
+              style: TextStyle(color: context.colors.muted),
             ),
             const SizedBox(height: 20),
             Text('Category', style: textTheme.titleMedium),
-            const Text(
+            Text(
               'Choose multiple',
-              style: TextStyle(color: AppColors.muted, fontSize: 12),
+              style: TextStyle(color: context.colors.muted, fontSize: 12),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -105,15 +112,31 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            const FieldLabel('Building or area'),
+            const FieldLabel('Building'),
             DropdownButtonFormField<String?>(
               initialValue: _building,
               items: [
-                const DropdownMenuItem(value: null, child: Text('All areas')),
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text('All buildings'),
+                ),
                 for (final building in campusBuildings)
                   DropdownMenuItem(value: building, child: Text(building)),
               ],
               onChanged: (value) => setState(() => _building = value),
+            ),
+            const FieldLabel('Month submitted'),
+            DropdownButtonFormField<DateTime?>(
+              initialValue: _month,
+              items: [
+                const DropdownMenuItem(value: null, child: Text('Any month')),
+                for (final month in months)
+                  DropdownMenuItem(
+                    value: month,
+                    child: Text(formatMonth(month)),
+                  ),
+              ],
+              onChanged: (value) => setState(() => _month = value),
             ),
             const SizedBox(height: 20),
             InfoBanner(

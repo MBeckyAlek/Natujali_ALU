@@ -48,12 +48,12 @@ class _CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : AppColors.ink;
+    final foreground = selected ? Colors.white : context.colors.ink;
     return Semantics(
       selected: selected,
       button: true,
       child: Material(
-        color: selected ? AppColors.primary : AppColors.primaryTint,
+        color: selected ? context.colors.primary : context.colors.primaryTint,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -63,7 +63,7 @@ class _CategoryTile extends StatelessWidget {
             children: [
               Icon(
                 category.icon,
-                color: selected ? Colors.white : AppColors.primary,
+                color: selected ? Colors.white : context.colors.primary,
               ),
               const SizedBox(height: 6),
               Text(

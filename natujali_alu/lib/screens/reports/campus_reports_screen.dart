@@ -53,14 +53,14 @@ class _CampusReportsScreenState extends ConsumerState<CampusReportsScreen> {
             title: 'Campus reports',
             trailing: IconButton(
               tooltip: 'Report an issue',
-              color: AppColors.primary,
+              color: context.colors.primary,
               icon: const Icon(Icons.add),
               onPressed: () => ReportFormScreen.open(context),
             ),
           ),
-          const Text(
+          Text(
             "See what's been reported and what's being fixed.",
-            style: TextStyle(color: AppColors.muted),
+            style: TextStyle(color: context.colors.muted),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -154,7 +154,7 @@ class _ReportList extends StatelessWidget {
       children: [
         Text(
           '${reports.length} campus ${reports.length == 1 ? 'report' : 'reports'} · newest first',
-          style: const TextStyle(color: AppColors.muted, fontSize: 13),
+          style: TextStyle(color: context.colors.muted, fontSize: 13),
         ),
         const SizedBox(height: 12),
         for (final report in reports)
@@ -163,9 +163,9 @@ class _ReportList extends StatelessWidget {
             onTap: () => ReportDetailsScreen.open(context, report.id),
           ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Found the same issue? Follow the existing report instead of creating a duplicate.',
-          style: TextStyle(color: AppColors.muted, fontSize: 12),
+          style: TextStyle(color: context.colors.muted, fontSize: 12),
         ),
       ],
     );

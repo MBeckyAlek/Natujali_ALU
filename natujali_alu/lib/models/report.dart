@@ -28,18 +28,26 @@ enum ReportStatus {
   bool get isOpen => this != ReportStatus.resolved;
 }
 
-/// Areas students can pick when reporting. Replace with the real campus list.
+/// The three main campus buildings. Each has several floors, so students
+/// say where inside the building in the floor/room field and description.
 const campusBuildings = [
-  'Main Building',
-  'Lecture Block A',
-  'Lecture Block B',
-  'Library',
-  'Innovation Lab',
-  'Student Residence',
-  'Cafeteria',
-  'Sports Ground',
-  'Car Park',
-  'Other',
+  'Learning Commons',
+  'Enterprise Commons',
+  'Social Commons',
+];
+
+/// Shown as the author of staff updates when no team is assigned.
+const campusOperationsName = 'Campus operations';
+
+/// Teams staff can assign a report to. Shown to students as "Assigned to".
+const campusTeams = [
+  'Facilities',
+  'Electrical',
+  'Plumbing',
+  'Cleaning',
+  'Security',
+  'IT & AV',
+  'Grounds',
 ];
 
 /// One entry in a report's status history. Entries are only ever added,
@@ -121,6 +129,27 @@ class Report {
   /// Students may only change their own report before staff pick it up.
   bool canBeEditedBy(String? uid) =>
       uid == reporterId && status == ReportStatus.submitted;
+
+  /// Returns a copy moved to [update]'s status, with the update added to
+  /// the history.
+  Report withStatusUpdate(StatusUpdate update, {String? assignedTeam}) {
+    return Report(
+      id: id,
+      reference: reference,
+      title: title,
+      description: description,
+      category: category,
+      building: building,
+      landmark: landmark,
+      photoPath: photoPath,
+      status: update.status,
+      reporterId: reporterId,
+      assignedTeam: assignedTeam ?? this.assignedTeam,
+      createdAt: createdAt,
+      updatedAt: update.at,
+      history: [...history, update],
+    );
+  }
 
   /// Returns a copy with the student-editable fields replaced.
   Report withDetails(ReportInput input, DateTime updatedAt) {

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +9,7 @@ import '../../providers/report_providers.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/detail_row.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/report_photo.dart';
 import '../../widgets/screen_header.dart';
 import '../../widgets/status_chip.dart';
 import '../report_form/report_form_screen.dart';
@@ -113,12 +112,16 @@ class ReportDetailsScreen extends ConsumerWidget {
             ),
             Row(
               children: [
-                Icon(report.category.icon, size: 18, color: AppColors.primary),
+                Icon(
+                  report.category.icon,
+                  size: 18,
+                  color: context.colors.primary,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   report.category.label,
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: context.colors.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -130,7 +133,7 @@ class ReportDetailsScreen extends ConsumerWidget {
             Text(report.title, style: textTheme.headlineSmall),
             Text(
               report.location,
-              style: const TextStyle(color: AppColors.muted),
+              style: TextStyle(color: context.colors.muted),
             ),
             const SizedBox(height: 16),
             AppCard(
@@ -139,7 +142,9 @@ class ReportDetailsScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'STATUS TIMELINE',
-                    style: textTheme.labelSmall?.copyWith(color: AppColors.ink),
+                    style: textTheme.labelSmall?.copyWith(
+                      color: context.colors.ink,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   StatusTimelineBar(current: report.status),
@@ -154,12 +159,10 @@ class ReportDetailsScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.file(
-                  File(report.photoPath!),
+                child: ReportPhoto(
+                  path: report.photoPath!,
                   height: 200,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
                 ),
               ),
             ],

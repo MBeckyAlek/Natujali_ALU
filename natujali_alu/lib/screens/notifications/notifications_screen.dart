@@ -119,12 +119,12 @@ class _NotificationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
-        color: unread ? AppColors.primaryTint : AppColors.surface,
+        color: unread ? context.colors.primaryTint : context.colors.surface,
         onTap: () => ReportDetailsScreen.open(context, report.id),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppColors.primary),
+            Icon(icon, color: context.colors.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -137,7 +137,7 @@ class _NotificationCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '${report.title}: ${update.note}',
-                    style: const TextStyle(color: AppColors.muted),
+                    style: TextStyle(color: context.colors.muted),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -148,11 +148,11 @@ class _NotificationCard extends StatelessWidget {
               ),
             ),
             if (unread)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 8, top: 4),
                 child: CircleAvatar(
                   radius: 4,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.colors.primary,
                 ),
               ),
           ],

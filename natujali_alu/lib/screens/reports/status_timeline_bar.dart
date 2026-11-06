@@ -22,8 +22,8 @@ class StatusTimelineBar extends StatelessWidget {
                 height: 2,
                 margin: const EdgeInsets.only(top: 11),
                 color: i <= current.index
-                    ? AppColors.primary
-                    : AppColors.border,
+                    ? context.colors.primary
+                    : context.colors.border,
               ),
             ),
           _Step(status: steps[i], current: current),
@@ -48,9 +48,9 @@ class _Step extends StatelessWidget {
 
     final Widget circle;
     if (isDone) {
-      circle = const CircleAvatar(
+      circle = CircleAvatar(
         radius: 12,
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.colors.primary,
         child: Icon(Icons.check, size: 14, color: Colors.white),
       );
     } else if (isCurrent) {
@@ -59,16 +59,19 @@ class _Step extends StatelessWidget {
         height: 24,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.primary, width: 2),
+          border: Border.all(color: context.colors.primary, width: 2),
         ),
-        child: const Center(
-          child: CircleAvatar(radius: 5, backgroundColor: AppColors.primary),
+        child: Center(
+          child: CircleAvatar(
+            radius: 5,
+            backgroundColor: context.colors.primary,
+          ),
         ),
       );
     } else {
-      circle = const CircleAvatar(
+      circle = CircleAvatar(
         radius: 12,
-        backgroundColor: AppColors.primaryTint,
+        backgroundColor: context.colors.primaryTint,
       );
     }
 
@@ -84,7 +87,7 @@ class _Step extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: isReached ? AppColors.primary : AppColors.muted,
+              color: isReached ? context.colors.primary : context.colors.muted,
             ),
           ),
         ],
