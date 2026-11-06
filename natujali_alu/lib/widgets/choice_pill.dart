@@ -18,10 +18,10 @@ class ChoicePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? AppColors.primary : AppColors.surface,
+      color: selected ? context.colors.primary : context.colors.surface,
       shape: StadiumBorder(
         side: BorderSide(
-          color: selected ? AppColors.primary : AppColors.border,
+          color: selected ? context.colors.primary : context.colors.border,
         ),
       ),
       child: InkWell(
@@ -32,7 +32,7 @@ class ChoicePill extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? Colors.white : AppColors.ink,
+              color: selected ? Colors.white : context.colors.ink,
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),

@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
 import '../models/report.dart';
+import 'report_photo.dart';
 
 /// Square preview for a report: its photo if it has one, otherwise the
 /// category icon.
@@ -16,10 +15,10 @@ class ReportThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placeholder = Container(
-      color: AppColors.primaryTint,
+      color: context.colors.primaryTint,
       child: Icon(
         report.category.icon,
-        color: AppColors.primary,
+        color: context.colors.primary,
         size: size * 0.42,
       ),
     );
@@ -31,11 +30,7 @@ class ReportThumbnail extends StatelessWidget {
         dimension: size,
         child: path == null
             ? placeholder
-            : Image.file(
-                File(path),
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => placeholder,
-              ),
+            : ReportPhoto(path: path, fallback: placeholder),
       ),
     );
   }

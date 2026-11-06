@@ -19,28 +19,28 @@ class ReportSummaryRow extends StatelessWidget {
       _StatTile(
         reports.length,
         'My reports',
-        AppColors.primaryTint,
-        AppColors.primary,
+        context.colors.primaryTint,
+        context.colors.primary,
       ),
       _StatTile(
         _count((s) => s == ReportStatus.submitted),
         'Submitted',
-        AppColors.amber,
-        AppColors.amberText,
+        context.colors.amber,
+        context.colors.amberText,
       ),
       _StatTile(
         _count(
           (s) => s == ReportStatus.underReview || s == ReportStatus.inProgress,
         ),
         'In progress',
-        AppColors.accentTint,
-        AppColors.accent,
+        context.colors.accentTint,
+        context.colors.accent,
       ),
       _StatTile(
         _count((s) => s == ReportStatus.resolved),
         'Resolved',
-        AppColors.green,
-        AppColors.greenText,
+        context.colors.green,
+        context.colors.greenText,
       ),
     ];
 

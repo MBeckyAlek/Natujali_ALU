@@ -18,7 +18,7 @@ class DetailRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 110,
-            child: Text(label, style: const TextStyle(color: AppColors.muted)),
+            child: Text(label, style: TextStyle(color: context.colors.muted)),
           ),
           Expanded(child: Text(value)),
         ],

@@ -10,18 +10,30 @@ class StatusChip extends StatelessWidget {
 
   final ReportStatus status;
 
-  static (Color background, Color foreground) colorsFor(ReportStatus status) {
+  static (Color background, Color foreground) colorsFor(
+    BuildContext context,
+    ReportStatus status,
+  ) {
     return switch (status) {
-      ReportStatus.submitted => (AppColors.amber, AppColors.amberText),
-      ReportStatus.underReview => (AppColors.purple, AppColors.purpleText),
-      ReportStatus.inProgress => (AppColors.accentTint, AppColors.accent),
-      ReportStatus.resolved => (AppColors.green, AppColors.greenText),
+      ReportStatus.submitted => (
+        context.colors.amber,
+        context.colors.amberText,
+      ),
+      ReportStatus.underReview => (
+        context.colors.purple,
+        context.colors.purpleText,
+      ),
+      ReportStatus.inProgress => (
+        context.colors.accentTint,
+        context.colors.accent,
+      ),
+      ReportStatus.resolved => (context.colors.green, context.colors.greenText),
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final (background, foreground) = colorsFor(status);
+    final (background, foreground) = colorsFor(context, status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(

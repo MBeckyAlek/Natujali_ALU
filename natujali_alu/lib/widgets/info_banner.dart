@@ -26,8 +26,12 @@ class InfoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWarning = tone == BannerTone.warning;
-    final background = isWarning ? AppColors.amber : AppColors.primaryTint;
-    final foreground = isWarning ? AppColors.amberText : AppColors.primary;
+    final background = isWarning
+        ? context.colors.amber
+        : context.colors.primaryTint;
+    final foreground = isWarning
+        ? context.colors.amberText
+        : context.colors.primary;
 
     return Container(
       padding: const EdgeInsets.all(14),

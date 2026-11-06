@@ -8,19 +8,26 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get light {
+  static ThemeData get light => _build(AppPalette.light, Brightness.light);
+
+  static ThemeData get dark => _build(AppPalette.dark, Brightness.dark);
+
+  static ThemeData _build(AppPalette c, Brightness brightness) {
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        primary: AppColors.primary,
-        surface: AppColors.background,
+        seedColor: c.primary,
+        brightness: brightness,
+        primary: c.primary,
+        error: c.accent,
+        surface: c.surface,
       ),
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: c.background,
+      extensions: [c],
     );
 
     final inter = GoogleFonts.interTextTheme(base.textTheme)
-        .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
+        .apply(bodyColor: c.ink, displayColor: c.ink);
     final textTheme = inter.copyWith(
       headlineSmall: inter.headlineSmall?.copyWith(
         fontSize: 26,
@@ -36,16 +43,13 @@ class AppTheme {
       ),
       bodyLarge: inter.bodyLarge?.copyWith(fontSize: 15, height: 1.45),
       bodyMedium: inter.bodyMedium?.copyWith(fontSize: 14, height: 1.4),
-      bodySmall: inter.bodySmall?.copyWith(
-        fontSize: 12,
-        color: AppColors.muted,
-      ),
+      bodySmall: inter.bodySmall?.copyWith(fontSize: 12, color: c.muted),
       // Used for the small red "eyebrow" labels above page titles (ALU red).
       labelSmall: inter.labelSmall?.copyWith(
         fontSize: 11,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
-        color: AppColors.accent,
+        color: c.accent,
       ),
     );
 
@@ -66,33 +70,33 @@ class AppTheme {
 
     return base.copyWith(
       textTheme: textTheme,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.ink,
+      appBarTheme: AppBarTheme(
+        backgroundColor: c.background,
+        foregroundColor: c.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: c.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 14,
         ),
-        hintStyle: const TextStyle(color: AppColors.muted),
-        border: inputBorder(AppColors.border),
-        enabledBorder: inputBorder(AppColors.border),
-        focusedBorder: inputBorder(AppColors.primary, 1.5),
-        errorBorder: inputBorder(AppColors.accent),
-        focusedErrorBorder: inputBorder(AppColors.accent, 1.5),
-        errorStyle: const TextStyle(color: AppColors.accent),
+        hintStyle: TextStyle(color: c.muted),
+        border: inputBorder(c.border),
+        enabledBorder: inputBorder(c.border),
+        focusedBorder: inputBorder(c.primary, 1.5),
+        errorBorder: inputBorder(c.accent),
+        focusedErrorBorder: inputBorder(c.accent, 1.5),
+        errorStyle: TextStyle(color: c.accent),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: c.primary,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primaryTint,
-          disabledForegroundColor: AppColors.primary.withValues(alpha: 0.6),
+          disabledBackgroundColor: c.primaryTint,
+          disabledForegroundColor: c.primary.withValues(alpha: 0.6),
           minimumSize: const Size.fromHeight(52),
           shape: buttonShape,
           textStyle: buttonText,
@@ -100,9 +104,9 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.border),
+          backgroundColor: c.surface,
+          foregroundColor: c.primary,
+          side: BorderSide(color: c.border),
           minimumSize: const Size.fromHeight(52),
           shape: buttonShape,
           textStyle: buttonText,
@@ -110,7 +114,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: c.primary,
           textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -120,7 +124,7 @@ class AppTheme {
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
+      dividerTheme: DividerThemeData(color: c.border, space: 1),
     );
   }
 }

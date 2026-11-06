@@ -17,7 +17,7 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const small = TextStyle(fontSize: 12, color: AppColors.muted);
+    final small = TextStyle(fontSize: 12, color: context.colors.muted);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -37,7 +37,7 @@ class ReportCard extends StatelessWidget {
                       Icon(
                         report.category.icon,
                         size: 14,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
@@ -46,10 +46,10 @@ class ReportCard extends StatelessWidget {
                           style: small,
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.chevron_right,
                         size: 18,
-                        color: AppColors.muted,
+                        color: context.colors.muted,
                       ),
                     ],
                   ),
@@ -63,10 +63,10 @@ class ReportCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.place_outlined,
                         size: 14,
-                        color: AppColors.muted,
+                        color: context.colors.muted,
                       ),
                       const SizedBox(width: 2),
                       Expanded(

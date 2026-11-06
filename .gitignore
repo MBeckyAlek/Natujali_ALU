@@ -68,3 +68,11 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 
+
+# IDE settings
+.idea/
+
+# Firebase platform config (contains API keys; regenerate with flutterfire configure)
+natujali_alu/android/app/google-services.json
+natujali_alu/ios/Runner/GoogleService-Info.plist
+natujali_alu/macos/Runner/GoogleService-Info.plist

@@ -19,9 +19,9 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(top: BorderSide(color: context.colors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -29,10 +29,10 @@ class AppBottomNav extends StatelessWidget {
           height: 72,
           child: Row(
             children: [
-              _tab(0, Icons.home_outlined, 'Home'),
-              _tab(1, Icons.assignment_outlined, 'Reports'),
+              _tab(context, 0, Icons.home_outlined, 'Home'),
+              _tab(context, 1, Icons.assignment_outlined, 'Reports'),
               Expanded(child: _ReportButton(onPressed: onReportPressed)),
-              _tab(2, Icons.person_outline, 'Profile'),
+              _tab(context, 2, Icons.person_outline, 'Profile'),
             ],
           ),
         ),
@@ -40,9 +40,9 @@ class AppBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _tab(int index, IconData icon, String label) {
+  Widget _tab(BuildContext context, int index, IconData icon, String label) {
     final selected = index == currentIndex;
-    final color = selected ? AppColors.primary : AppColors.muted;
+    final color = selected ? context.colors.primary : context.colors.muted;
     return Expanded(
       child: InkWell(
         onTap: () => onTabSelected(index),
@@ -85,11 +85,11 @@ class _ReportButton extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: AppColors.accent,
+                color: context.colors.accent,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accent.withValues(alpha: 0.35),
+                    color: context.colors.accent.withValues(alpha: 0.35),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -98,10 +98,10 @@ class _ReportButton extends StatelessWidget {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             ),
             const SizedBox(height: 2),
-            const Text(
+            Text(
               'Report',
               style: TextStyle(
-                color: AppColors.accent,
+                color: context.colors.accent,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),

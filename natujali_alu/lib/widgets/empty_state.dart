@@ -24,13 +24,13 @@ class EmptyState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryTint,
+        color: context.colors.primaryTint,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: context.colors.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -38,7 +38,7 @@ class EmptyState extends StatelessWidget {
               children: [
                 Text(title, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
-                Text(message, style: const TextStyle(color: AppColors.muted)),
+                Text(message, style: TextStyle(color: context.colors.muted)),
                 if (actionLabel != null)
                   TextButton(
                     style: TextButton.styleFrom(padding: EdgeInsets.zero),
