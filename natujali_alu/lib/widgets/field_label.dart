@@ -19,8 +19,17 @@ class FieldLabel extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
-          if (trailing != null)
-            Text(trailing!, style: Theme.of(context).textTheme.bodySmall),
+          if (trailing != null) ...[
+            const SizedBox(width: 8),
+            // Shrinks and wraps instead of overflowing with large text.
+            Flexible(
+              child: Text(
+                trailing!,
+                textAlign: TextAlign.end,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
         ],
       ),
     );

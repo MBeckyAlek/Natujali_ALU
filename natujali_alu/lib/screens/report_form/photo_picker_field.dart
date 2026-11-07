@@ -82,9 +82,11 @@ class PhotoPickerField extends StatelessWidget {
     if (path == null) {
       return Column(
         children: [
+          // Sized by its content (not a fixed height) so large system
+          // text doesn't spill out of the box.
           Container(
-            height: 96,
             width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
             decoration: BoxDecoration(
               color: context.colors.surface,
               borderRadius: BorderRadius.circular(14),
@@ -100,6 +102,7 @@ class PhotoPickerField extends StatelessWidget {
                 SizedBox(height: 6),
                 Text(
                   'A photo helps staff find the issue faster',
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: context.colors.muted, fontSize: 12),
                 ),
               ],

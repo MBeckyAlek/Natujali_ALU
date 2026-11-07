@@ -24,13 +24,29 @@ class CloudinaryService {
 
     final response = await request.send().timeout(const Duration(seconds: 60));
     final responseBody = await response.stream.bytesToString();
-    final result = jsonDecode(responseBody) as Map<String, dynamic>;
+    final Map<String, dynamic> result;
+    try {
+      result = jsonDecode(responseBody) as Map<String, dynamic>;
+    } on FormatException {
+      throw PhotoUploadException('server replied ${response.statusCode}');
+    }
 
     if (response.statusCode == 200) {
       return result['secure_url'] as String;
     }
 
     final errorMessage = result['error']?['message'] ?? 'Image upload failed';
-    throw Exception(errorMessage);
+    throw PhotoUploadException(errorMessage as String);
   }
+}
+
+/// Cloudinary rejected the photo, e.g. a missing upload preset or a file
+/// that is too large. The message comes from Cloudinary.
+class PhotoUploadException implements Exception {
+  const PhotoUploadException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'PhotoUploadException: $message';
 }

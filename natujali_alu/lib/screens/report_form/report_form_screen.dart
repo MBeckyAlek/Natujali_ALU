@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/error_messages.dart';
 import '../../core/utils/validators.dart';
+import '../../models/announcement.dart';
 import '../../models/report.dart';
 import '../../models/report_filter.dart';
+import '../../providers/announcement_providers.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/report_providers.dart';
+import '../../widgets/announcement_banner.dart';
 import '../../widgets/button_spinner.dart';
 import '../../widgets/field_label.dart';
 import '../../widgets/info_banner.dart';
@@ -102,12 +106,15 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
       // Inputs stay in the form so the student can simply try again.
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            "We couldn't send your report. Check your connection and try again.",
+            describeError(
+              e,
+              action: _isEditing ? 'save your changes' : 'send your report',
+            ),
           ),
         ),
       );
@@ -127,12 +134,19 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
             building: _building!,
             excludeId: widget.existing?.id,
           );
+    // Known issues staff have announced for this building (or campus-wide).
+    final notices = _building == null
+        ? const <Announcement>[]
+        : ref.watch(announcementsForBuildingProvider(_building));
 
     return Scaffold(
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
+            // Scrolling closes the keyboard so the photo and Submit button
+            // underneath it come into view.
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(20),
             children: [
               ScreenHeader(
@@ -178,6 +192,7 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
               ),
               const FieldLabel('Building *'),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: _building,
                 hint: const Text('Choose a building'),
                 items: [
@@ -188,6 +203,16 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                 validator: (value) =>
                     value == null ? 'Choose where the issue is.' : null,
               ),
+              if (notices.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Staff already know about:',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 6),
+                for (final notice in notices)
+                  AnnouncementBanner(announcement: notice),
+              ],
               const FieldLabel('Floor and room', trailing: 'Optional'),
               TextFormField(
                 controller: _landmarkController,
@@ -204,8 +229,9 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                       'Similar open ${similar.length == 1 ? 'report' : 'reports'} here',
                   message:
                       '${similar.first.reference} · ${similar.first.title}. '
-                      'If it is the same issue, follow that report instead of submitting a duplicate.',
-                  actionLabel: 'View ${similar.first.reference}',
+                      'If it is the same issue, open it and tap "Me too" '
+                      'instead of submitting a duplicate.',
+                  actionLabel: 'Open ${similar.first.reference}',
                   onAction: () =>
                       ReportDetailsScreen.open(context, similar.first.id),
                 ),

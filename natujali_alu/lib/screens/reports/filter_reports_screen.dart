@@ -114,6 +114,7 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
             const SizedBox(height: 8),
             const FieldLabel('Building'),
             DropdownButtonFormField<String?>(
+              isExpanded: true,
               initialValue: _building,
               items: [
                 const DropdownMenuItem(
@@ -127,6 +128,7 @@ class _FilterReportsScreenState extends ConsumerState<FilterReportsScreen> {
             ),
             const FieldLabel('Month submitted'),
             DropdownButtonFormField<DateTime?>(
+              isExpanded: true,
               initialValue: _month,
               items: [
                 const DropdownMenuItem(value: null, child: Text('Any month')),
