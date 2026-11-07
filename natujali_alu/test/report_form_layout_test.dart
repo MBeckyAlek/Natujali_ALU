@@ -5,6 +5,7 @@ import 'package:natujali_alu/core/theme/app_theme.dart';
 import 'package:natujali_alu/data/announcement_repository.dart';
 import 'package:natujali_alu/data/fake_auth_repository.dart';
 import 'package:natujali_alu/data/fake_report_repository.dart';
+import 'package:natujali_alu/models/report.dart';
 import 'package:natujali_alu/providers/announcement_providers.dart';
 import 'package:natujali_alu/providers/auth_providers.dart';
 import 'package:natujali_alu/providers/report_providers.dart';
@@ -68,7 +69,8 @@ void main() {
       await tester.tap(find.text('Social Commons').last);
       await tester.pumpAndSettle();
       expect(find.text('Staff already know about:'), findsOneWidget);
-      expect(find.textContaining('Similar open'), findsOneWidget);
+      // The demo student filed the open water report there themselves.
+      expect(find.text('You already reported this'), findsOneWidget);
 
       tester.view.viewInsets = const FakeViewPadding(bottom: 900);
       await tester.pumpAndSettle();
@@ -83,4 +85,68 @@ void main() {
       }
     },
   );
+
+  testWidgets('similar report by another student offers "Me too" in the form', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    final reports = FakeReportRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentUserProvider.overrideWithValue(FakeAuthRepository.demoStudent),
+          reportRepositoryProvider.overrideWithValue(reports),
+          announcementRepositoryProvider.overrideWithValue(
+            FakeAnnouncementRepository(),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () => ReportFormScreen.open(context),
+                  child: const Text('Report'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Report'));
+    await tester.pumpAndSettle();
+    final form = find.byType(Scrollable).first;
+
+    // Another student's handrail report is open in Enterprise Commons.
+    await tester.tap(find.text('Safety'));
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('Choose a building'),
+      200,
+      scrollable: form,
+    );
+    await tester.tap(find.text('Choose a building'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enterprise Commons').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Someone already reported this'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Me too'), 200, scrollable: form);
+    await tester.tap(find.text('Me too'));
+    await tester.pumpAndSettle();
+
+    // The form closes and the student now backs an existing report.
+    expect(find.byType(ReportFormScreen), findsNothing);
+    final backed = (await reports.watchReports().first).where(
+      (r) =>
+          r.category == ReportCategory.safety &&
+          r.isSupportedBy(FakeAuthRepository.demoStudent.uid),
+    );
+    expect(backed, isNotEmpty);
+  });
 }

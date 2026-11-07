@@ -123,6 +123,36 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
     }
   }
 
+  /// Backs an existing report instead of filing a duplicate, then closes
+  /// the form.
+  Future<void> _meToo(Report report) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+    setState(() => _isSubmitting = true);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(reportRepositoryProvider)
+          .setSupport(report.id, uid: user.uid, support: true);
+      navigator.pop();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added your "Me too" to ${report.reference}. '
+            'Staff can see this affects more students.',
+          ),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(describeError(e, action: 'save your "Me too"'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final allReports = ref.watch(reportsProvider).value ?? const [];
@@ -223,17 +253,10 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
               ),
               if (similar.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                InfoBanner(
-                  icon: Icons.content_copy_outlined,
-                  title:
-                      'Similar open ${similar.length == 1 ? 'report' : 'reports'} here',
-                  message:
-                      '${similar.first.reference} · ${similar.first.title}. '
-                      'If it is the same issue, open it and tap "Me too" '
-                      'instead of submitting a duplicate.',
-                  actionLabel: 'Open ${similar.first.reference}',
-                  onAction: () =>
-                      ReportDetailsScreen.open(context, similar.first.id),
+                _SimilarReportBanner(
+                  similar: similar,
+                  uid: ref.watch(currentUserProvider)?.uid,
+                  onMeToo: _meToo,
                 ),
               ],
               const FieldLabel('Photo', trailing: 'Optional'),
@@ -309,6 +332,54 @@ class _ErrorText extends StatelessWidget {
         message,
         style: TextStyle(color: context.colors.accent, fontSize: 12),
       ),
+    );
+  }
+}
+
+/// Warns about open reports like this one. If another student filed it, the
+/// student can say "Me too" straight away; if it's their own, they're told
+/// they already reported it ("Me too" is only for other people's reports).
+class _SimilarReportBanner extends StatelessWidget {
+  const _SimilarReportBanner({
+    required this.similar,
+    required this.uid,
+    required this.onMeToo,
+  });
+
+  final List<Report> similar;
+  final String? uid;
+  final ValueChanged<Report> onMeToo;
+
+  @override
+  Widget build(BuildContext context) {
+    final byOthers = similar.where((r) => r.reporterId != uid).toList();
+    if (byOthers.isEmpty) {
+      final own = similar.first;
+      return InfoBanner(
+        icon: Icons.content_copy_outlined,
+        title: 'You already reported this',
+        message:
+            '${own.reference} · ${own.title} is still open, so staff '
+            'already know. No need to report it again.',
+        actionLabel: 'Open ${own.reference}',
+        onAction: () => ReportDetailsScreen.open(context, own.id),
+      );
+    }
+
+    final report = byOthers.first;
+    final alreadyBacked = uid != null && report.isSupportedBy(uid!);
+    return InfoBanner(
+      icon: Icons.people_outline,
+      title: 'Someone already reported this',
+      message: alreadyBacked
+          ? '${report.reference} · ${report.title}. You already said '
+                '"Me too" on it.'
+          : '${report.reference} · ${report.title}. If it is the same '
+                'issue, tap "Me too" instead of sending a new report.',
+      actionLabel: alreadyBacked ? 'Open ${report.reference}' : 'Me too',
+      onAction: alreadyBacked
+          ? () => ReportDetailsScreen.open(context, report.id)
+          : () => onMeToo(report),
     );
   }
 }
