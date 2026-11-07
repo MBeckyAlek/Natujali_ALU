@@ -8,6 +8,27 @@ Natujali (Kiswahili word for 'Lets care') lets students report problems on campu
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/general_landing_page.png" width="150" alt="Landing page"/><br/><sub>Landing page</sub></td>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/student_home_page.png" width="150" alt="Student – Home"/><br/><sub>Student – Home</sub></td>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/student_report_form_screen.png" width="150" alt="Student – Report form"/><br/><sub>Student – Report form</sub></td>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/student_report_screen.png" width="150" alt="Student – Reports"/><br/><sub>Student – Reports</sub></td>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/profile_screen.png" width="150" alt="Profile"/><br/><sub>Profile</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/staff_home_page.png" width="150" alt="Staff – Home"/><br/><sub>Staff – Home</sub></td>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/staff_report_screen.png" width="150" alt="Staff – Reports"/><br/><sub>Staff – Reports</sub></td>
+    <td align="center" width="20%"><img src="natujali_alu/screenshots/staff_announcement_page.png" width="150" alt="Staff – Announcements"/><br/><sub>Staff – Announcements</sub></td>
+    <td width="20%"></td>
+    <td width="20%"></td>
+  </tr>
+</table>
+
+---
+
 ## Features
 
 ### For students
