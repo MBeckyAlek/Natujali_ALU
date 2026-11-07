@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/app_user.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/session_providers.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/info_banner.dart';
 import '../../widgets/screen_header.dart';
+import '../../widgets/theme_mode_selector.dart';
 import '../notifications/notifications_screen.dart';
 import '../reports/my_reports_screen.dart';
 
@@ -52,7 +54,7 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
     // AuthGate returns to the sign-in screen once the user is signed out.
-    if (confirmed == true) await ref.read(authRepositoryProvider).signOut();
+    if (confirmed == true) await ref.read(sessionProvider.notifier).end();
   }
 
   void _showSafetyInfo(BuildContext context) {
@@ -93,22 +95,25 @@ class ProfileScreen extends ConsumerWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                _MenuTile(
-                  icon: Icons.assignment_outlined,
-                  label: 'My reports',
-                  onTap: () => MyReportsScreen.open(context),
-                ),
-                const Divider(),
-                _MenuTile(
-                  icon: Icons.notifications_none,
-                  label: 'Notifications',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsScreen(),
+                // Staff don't file reports, so they skip the student rows.
+                if (!isStaff) ...[
+                  _MenuTile(
+                    icon: Icons.assignment_outlined,
+                    label: 'My reports',
+                    onTap: () => MyReportsScreen.open(context),
+                  ),
+                  const Divider(),
+                  _MenuTile(
+                    icon: Icons.notifications_none,
+                    label: 'Notifications',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
                     ),
                   ),
-                ),
-                const Divider(),
+                  const Divider(),
+                ],
                 _MenuTile(
                   icon: Icons.lock_outline,
                   label: 'Reset password',
@@ -117,6 +122,10 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 24),
+          Text('Appearance', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          const ThemeModeSelector(),
           const SizedBox(height: 16),
           InfoBanner(
             title: 'Your account role',
@@ -158,7 +167,7 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const muted = TextStyle(color: AppColors.muted, fontSize: 13);
+    final muted = TextStyle(color: context.colors.muted, fontSize: 13);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,11 +176,11 @@ class _ProfileCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundColor: AppColors.primaryTint,
+                backgroundColor: context.colors.primaryTint,
                 child: Text(
                   user.initials,
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: context.colors.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
@@ -196,15 +205,15 @@ class _ProfileCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: context.colors.border),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.verified_outlined,
                             size: 14,
-                            color: AppColors.greenText,
+                            color: context.colors.greenText,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -225,7 +234,7 @@ class _ProfileCard extends StatelessWidget {
           const SizedBox(height: 14),
           Text(user.email, style: muted),
           const SizedBox(height: 4),
-          const Text('African Leadership University', style: muted),
+          Text('African Leadership University', style: muted),
         ],
       ),
     );
@@ -246,9 +255,9 @@ class _MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
+      leading: Icon(icon, color: context.colors.primary),
       title: Text(label),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.muted),
+      trailing: Icon(Icons.chevron_right, color: context.colors.muted),
       onTap: onTap,
     );
   }

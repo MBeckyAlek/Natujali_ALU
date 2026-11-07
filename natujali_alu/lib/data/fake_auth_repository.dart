@@ -6,10 +6,11 @@ import 'auth_repository.dart';
 /// In-memory stand-in for Firebase Authentication, used until the Firebase
 /// project is connected. Data resets when the app restarts.
 ///
-/// Demo login: a.hassan@alustudent.com / password1
+/// Demo logins (password1): a.hassan@alustudent.com, j.mensah@alueducation.com
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository() {
     _accounts[demoStudent.email] = _FakeAccount('password1', demoStudent);
+    _accounts[demoStaff.email] = _FakeAccount('password1', demoStaff);
   }
 
   static const demoStudent = AppUser(
@@ -18,6 +19,15 @@ class FakeAuthRepository implements AuthRepository {
     email: 'a.hassan@alustudent.com',
     studentId: 'ALU-2024-0816',
     role: UserRole.student,
+    emailVerified: true,
+  );
+
+  static const demoStaff = AppUser(
+    uid: 'staff-1',
+    fullName: 'Joseph Mensah',
+    email: 'j.mensah@alueducation.com',
+    studentId: '',
+    role: UserRole.staff,
     emailVerified: true,
   );
 
@@ -32,7 +42,10 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signIn({required String email, required String password}) async {
+  Future<AppUser> signIn({
+    required String email,
+    required String password,
+  }) async {
     await _simulateNetwork();
     final account = _accounts[email.trim().toLowerCase()];
     if (account == null || account.password != password) {
@@ -42,6 +55,7 @@ class FakeAuthRepository implements AuthRepository {
       );
     }
     _setUser(account.user);
+    return account.user;
   }
 
   @override
@@ -92,6 +106,15 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async => _setUser(null);
+
+  @override
+  Future<AppUser?> fetchUser(String uid) async {
+    await _simulateNetwork();
+    return _accounts.values
+        .map((account) => account.user)
+        .where((user) => user.uid == uid)
+        .firstOrNull;
+  }
 
   void _setUser(AppUser? user) {
     _currentUser = user;

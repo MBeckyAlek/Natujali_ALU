@@ -9,7 +9,8 @@ abstract class AuthRepository {
   /// Emits the signed-in user, or null when signed out.
   Stream<AppUser?> authStateChanges();
 
-  Future<void> signIn({required String email, required String password});
+  /// Signs in and returns the user, so the caller can check their role.
+  Future<AppUser> signIn({required String email, required String password});
 
   /// Creates a student account and sends a verification email.
   Future<void> register({
@@ -27,6 +28,9 @@ abstract class AuthRepository {
   Future<void> reloadUser();
 
   Future<void> signOut();
+
+  /// Staff only: looks up a reporter's profile, or null if not found.
+  Future<AppUser?> fetchUser(String uid);
 }
 
 /// A failure with a message that is safe to show to the user.

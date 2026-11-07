@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../data/auth_repository.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/session_providers.dart';
 import '../../widgets/button_spinner.dart';
 import '../../widgets/field_label.dart';
 import '../../widgets/info_banner.dart';
@@ -51,6 +52,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
     try {
       await ref
+          .read(sessionProvider.notifier)
+          .start(Portal.student, remember: false);
+      await ref
           .read(authRepositoryProvider)
           .register(
             fullName: _nameController.text,
@@ -86,10 +90,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 title: 'Join your campus',
                 showBack: true,
               ),
-              const Text(
+              Text(
                 'Create a student account with your ALU email. '
                 'Staff access is invitation-only.',
-                style: TextStyle(color: AppColors.muted),
+                style: TextStyle(color: context.colors.muted),
               ),
               const FieldLabel('Full name'),
               TextFormField(
@@ -147,10 +151,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   style: TextStyle(fontSize: 13),
                 ),
                 subtitle: _submitAttempted && !_agreed
-                    ? const Text(
+                    ? Text(
                         'Please accept the terms to continue.',
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                           fontSize: 12,
                         ),
                       )

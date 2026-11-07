@@ -28,13 +28,14 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signIn({required String email, required String password}) {
-    return _guard(
-      () => _auth.signInWithEmailAndPassword(
+  Future<AppUser> signIn({required String email, required String password}) {
+    return _guard(() async {
+      final credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
-      ),
-    );
+      );
+      return _loadProfile(credential.user!);
+    });
   }
 
   @override
@@ -92,11 +93,33 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() => _auth.signOut();
 
+  @override
+  Future<AppUser?> fetchUser(String uid) async {
+    final profile = (await _users.doc(uid).get()).data();
+    if (profile == null) return null;
+    final email = profile['email'] as String? ?? '';
+    return AppUser(
+      uid: uid,
+      fullName: profile['fullName'] as String? ?? email,
+      email: email,
+      studentId: profile['studentId'] as String? ?? '',
+      role: UserRole.student,
+      emailVerified: true,
+    );
+  }
+
   Future<AppUser> _loadProfile(User user) async {
     final email = user.email ?? '';
     Map<String, dynamic>? profile;
+    var isStaff = email.endsWith('@${Validators.staffDomain}');
     try {
       profile = (await _users.doc(user.uid).get()).data();
+      // Staff without an @alueducation.com address are added by an admin
+      // in the Firebase console as a document in the `staff` collection.
+      if (!isStaff) {
+        isStaff =
+            (await _firestore.collection('staff').doc(user.uid).get()).exists;
+      }
     } on FirebaseException {
       // Fall back to what Firebase Auth knows if the profile can't be read.
     }
@@ -105,17 +128,15 @@ class FirebaseAuthRepository implements AuthRepository {
       fullName: profile?['fullName'] as String? ?? user.displayName ?? email,
       email: email,
       studentId: profile?['studentId'] as String? ?? '',
-      role: email.endsWith('@${Validators.staffDomain}')
-          ? UserRole.staff
-          : UserRole.student,
+      role: isStaff ? UserRole.staff : UserRole.student,
       emailVerified: user.emailVerified,
     );
   }
 
   /// Runs a Firebase call and turns its errors into friendly messages.
-  Future<void> _guard(Future<void> Function() action) async {
+  Future<T> _guard<T>(Future<T> Function() action) async {
     try {
-      await action();
+      return await action();
     } on FirebaseAuthException catch (e) {
       throw AuthException(_messageFor(e));
     } on FirebaseException {

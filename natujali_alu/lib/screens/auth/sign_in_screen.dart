@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../data/auth_repository.dart';
+import '../../models/app_user.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/session_providers.dart';
 import '../../widgets/button_spinner.dart';
 import '../../widgets/field_label.dart';
 import '../../widgets/info_banner.dart';
@@ -22,6 +24,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late Portal _portal = ref.read(sessionProvider);
+  bool _rememberMe = false;
   bool _isLoading = false;
   String? _error;
 
@@ -40,12 +44,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     });
     try {
       await ref
+          .read(sessionProvider.notifier)
+          .start(_portal, remember: _rememberMe);
+      final user = await ref
           .read(authRepositoryProvider)
           .signIn(
             email: _emailController.text,
             password: _passwordController.text,
           );
-      // AuthGate swaps to the home screen when the auth state changes.
+      // Staff may use either portal; students only the student one.
+      if (_portal == Portal.staff && user.role != UserRole.staff) {
+        await ref.read(sessionProvider.notifier).end();
+        setState(
+          () => _error =
+              "This account doesn't have staff access. Sign in as a student, "
+              'or ask an administrator to add you as staff.',
+        );
+      }
+      // Otherwise AuthGate swaps to the right app when the auth state changes.
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
@@ -86,6 +102,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isStaff = _portal == Portal.staff;
 
     return Scaffold(
       body: SafeArea(
@@ -103,14 +120,38 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               const _WelcomeCard(),
               const SizedBox(height: 24),
               Text('Welcome back', style: textTheme.titleLarge),
+              const SizedBox(height: 12),
+              SegmentedButton<Portal>(
+                segments: const [
+                  ButtonSegment(
+                    value: Portal.student,
+                    label: Text('Student'),
+                    icon: Icon(Icons.school_outlined),
+                  ),
+                  ButtonSegment(
+                    value: Portal.staff,
+                    label: Text('Staff'),
+                    icon: Icon(Icons.badge_outlined),
+                  ),
+                ],
+                selected: {_portal},
+                onSelectionChanged: _isLoading
+                    ? null
+                    : (selection) => setState(() {
+                        _portal = selection.single;
+                        _error = null;
+                      }),
+              ),
               const FieldLabel('University email'),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 autofillHints: const [AutofillHints.email],
-                decoration: const InputDecoration(
-                  hintText: 'name@alustudent.com',
-                  suffixIcon: Icon(Icons.mail_outline),
+                decoration: InputDecoration(
+                  hintText: isStaff
+                      ? 'name@alueducation.com'
+                      : 'name@alustudent.com',
+                  suffixIcon: const Icon(Icons.mail_outline),
                 ),
                 validator: Validators.aluEmail,
               ),
@@ -120,13 +161,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 validator: (value) =>
                     Validators.required(value, 'Enter your password.'),
               ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                  onPressed: _showResetPassword,
-                  child: const Text('Forgot password?'),
-                ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _rememberMe,
+                    onChanged: (value) =>
+                        setState(() => _rememberMe = value ?? false),
+                  ),
+                  const Expanded(child: Text('Keep me signed in')),
+                  TextButton(
+                    onPressed: _showResetPassword,
+                    child: const Text('Forgot password?'),
+                  ),
+                ],
               ),
               if (_error != null) ...[
                 InfoBanner(title: 'Sign in failed', message: _error!),
@@ -137,24 +184,29 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 icon: _isLoading
                     ? const ButtonSpinner()
                     : const Icon(Icons.arrow_forward),
-                label: Text(_isLoading ? 'Signing in…' : 'Sign in'),
+                label: Text(
+                  _isLoading ? 'Signing in…' : 'Sign in as ${_portal.label}',
+                ),
               ),
               const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const RegisterScreen(),
+              if (!isStaff)
+                OutlinedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
                         ),
-                      ),
-                child: const Text('Create student account'),
-              ),
+                  child: const Text('Create student account'),
+                ),
               const SizedBox(height: 20),
-              const InfoBanner(
-                message:
-                    'Campus staff use their provisioned @alueducation.com account. '
-                    'Staff access is assigned by an administrator.',
+              InfoBanner(
+                message: isStaff
+                    ? 'Campus staff use their provisioned @alueducation.com account. '
+                          'Staff access is assigned by an administrator.'
+                    : 'Without "Keep me signed in", you will be asked to sign in '
+                          'again each time the app is opened.',
               ),
               const SizedBox(height: 16),
               Text(
@@ -175,60 +227,58 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Navy card with a red bar, echoing the ALU logo.
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
+    // Campus photo with a dark fade at the bottom so the caption stays
+    // readable in both themes.
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        height: 240,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/campus.jpg',
+              fit: BoxFit.cover,
+              alignment: const Alignment(0, 0.1),
+              semanticLabel: 'ALU campus courtyard at dusk',
             ),
-            child: const Icon(
-              Icons.account_balance_outlined,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'A better campus,\none report at a time.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(width: 48, height: 4, color: AppColors.accent),
-          const SizedBox(height: 12),
-          Text(
-            'Spot an issue. Share it in minutes. Follow every step toward a fix.',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
-          ),
-          const SizedBox(height: 10),
-          const Row(
-            children: [
-              Icon(Icons.shield_outlined, size: 16, color: Colors.white),
-              SizedBox(width: 6),
-              Text(
-                'Your campus. A shared responsibility.',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: [0.5, 1],
+                  colors: [Colors.transparent, Colors.black87],
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 16,
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.shield_outlined,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Our campus, our responsibility',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(width: 32, height: 4, color: context.colors.accent),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

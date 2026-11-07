@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/app_user.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/session_providers.dart';
 import '../../widgets/button_spinner.dart';
 import '../../widgets/info_banner.dart';
 
@@ -77,14 +78,14 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryTint,
+                decoration: BoxDecoration(
+                  color: context.colors.primaryTint,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.mark_email_unread_outlined,
                   size: 40,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               ),
             ),
@@ -99,7 +100,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               'We sent a verification link to\n${widget.user.email}.\n'
               'Open it, then come back here.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted),
+              style: TextStyle(color: context.colors.muted),
             ),
             const SizedBox(height: 24),
             const InfoBanner(
@@ -120,7 +121,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               child: const Text('Resend email'),
             ),
             TextButton(
-              onPressed: () => ref.read(authRepositoryProvider).signOut(),
+              onPressed: () => ref.read(sessionProvider.notifier).end(),
               child: const Text('Use a different account'),
             ),
           ],
