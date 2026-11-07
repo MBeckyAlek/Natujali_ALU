@@ -77,6 +77,7 @@ class FakeReportRepository implements ReportRepository {
     required ReportStatus status,
     required String note,
     String? assignedTeam,
+    ReportPriority? priority,
   }) async {
     await _simulateNetwork();
     final index = _reports.indexWhere((report) => report.id == reportId);
@@ -91,7 +92,21 @@ class FakeReportRepository implements ReportRepository {
     _reports[index] = _reports[index].withStatusUpdate(
       update,
       assignedTeam: assignedTeam,
+      priority: priority,
     );
+    _emit();
+  }
+
+  @override
+  Future<void> setSupport(
+    String reportId, {
+    required String uid,
+    required bool support,
+  }) async {
+    await _simulateNetwork();
+    final index = _reports.indexWhere((report) => report.id == reportId);
+    if (index == -1) throw StateError('Report $reportId not found');
+    _reports[index] = _reports[index].withSupport(uid, support: support);
     _emit();
   }
 
@@ -119,6 +134,8 @@ List<Report> _seedReports() {
     required Duration age,
     required List<StatusUpdate> history,
     String? assignedTeam,
+    ReportPriority? priority,
+    List<String> supporters = const [],
   }) {
     return Report(
       id: 'report-$number',
@@ -131,6 +148,8 @@ List<Report> _seedReports() {
       status: history.last.status,
       reporterId: reporterId,
       assignedTeam: assignedTeam,
+      staffPriority: priority,
+      supporters: supporters,
       createdAt: now.subtract(age),
       updatedAt: history.last.at,
       history: history,
@@ -157,6 +176,8 @@ List<Report> _seedReports() {
     report(
       number: 2031,
       title: 'Water shortage',
+      priority: ReportPriority.urgent,
+      supporters: const ['student-2', 'student-3', 'student-4'],
       description:
           'The taps in Social Commons have had no running water since this '
           'morning. Residents on floors 2 and 3 are unable to access water for basic needs.',
@@ -211,6 +232,8 @@ List<Report> _seedReports() {
     report(
       number: 2027,
       title: 'Broken chair in study area',
+      priority: ReportPriority.low,
+      supporters: [me],
       description:
           'One of the chairs in the quiet study area has a cracked leg and wobbles '
           'badly when you sit on it.',

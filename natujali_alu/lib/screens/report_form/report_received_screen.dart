@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/report.dart';
+import '../../models/rewards.dart';
 import '../../providers/auth_providers.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/detail_row.dart';
@@ -123,6 +124,10 @@ class ReportReceivedScreen extends ConsumerWidget {
             const _NextStep(
               Icons.timeline,
               'Track progress anytime in My reports.',
+            ),
+            const _NextStep(
+              Icons.monetization_on_outlined,
+              'Earn up to $maxCoinsPerReport coins once the issue is resolved.',
             ),
             const SizedBox(height: 20),
             FilledButton.icon(

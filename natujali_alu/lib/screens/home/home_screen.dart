@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../providers/announcement_providers.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/notification_providers.dart';
 import '../../providers/report_providers.dart';
+import '../../widgets/announcement_banner.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/report_card.dart';
 import '../../widgets/report_summary_row.dart';
@@ -12,6 +14,7 @@ import '../../widgets/screen_header.dart';
 import '../../widgets/section_header.dart';
 import '../notifications/notifications_screen.dart';
 import '../report_form/report_form_screen.dart';
+import '../rewards/rewards_screen.dart';
 import '../reports/my_reports_screen.dart';
 import '../reports/report_details_screen.dart';
 
@@ -23,6 +26,11 @@ class HomeScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final myReports = ref.watch(myReportsProvider);
     final unreadCount = ref.watch(unreadCountProvider);
+    final now = DateTime.now();
+    final announcements =
+        (ref.watch(activeAnnouncementsProvider).value ?? const []).where(
+          (a) => a.isActive(now),
+        );
 
     return SafeArea(
       child: ListView(
@@ -43,7 +51,14 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
+          for (final announcement in announcements)
+            AnnouncementBanner(announcement: announcement),
           _ReportPromptCard(onReport: () => ReportFormScreen.open(context)),
+          const SizedBox(height: 12),
+          CoinBalanceCard(
+            summary: ref.watch(coinSummaryProvider),
+            onTap: () => RewardsScreen.open(context),
+          ),
           SectionHeader(
             title: 'Report summary',
             actionLabel: 'See all',

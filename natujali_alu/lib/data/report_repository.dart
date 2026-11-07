@@ -22,5 +22,13 @@ abstract class ReportRepository {
     required ReportStatus status,
     required String note,
     String? assignedTeam,
+    ReportPriority? priority,
+  });
+
+  /// Adds or removes the student's "Me too" on someone else's open report.
+  Future<void> setSupport(
+    String reportId, {
+    required String uid,
+    required bool support,
   });
 }

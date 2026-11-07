@@ -28,6 +28,24 @@ enum ReportStatus {
   bool get isOpen => this != ReportStatus.resolved;
 }
 
+/// How quickly staff aim to resolve a report, measured from when it was
+/// submitted. Staff set it; until then it comes from the category.
+enum ReportPriority {
+  urgent('Urgent', Duration(hours: 4)),
+  high('High', Duration(hours: 24)),
+  normal('Normal', Duration(days: 3)),
+  low('Low', Duration(days: 7));
+
+  const ReportPriority(this.label, this.target);
+
+  final String label;
+  final Duration target;
+
+  /// Safety issues start as high priority; everything else as normal.
+  static ReportPriority defaultFor(ReportCategory category) =>
+      category == ReportCategory.safety ? high : normal;
+}
+
 /// The three main campus buildings. Each has several floors, so students
 /// say where inside the building in the floor/room field and description.
 const campusBuildings = [
@@ -103,6 +121,8 @@ class Report {
     required this.history,
     this.photoPath,
     this.assignedTeam,
+    this.staffPriority,
+    this.supporters = const [],
   });
 
   final String id;
@@ -122,6 +142,22 @@ class Report {
   final DateTime updatedAt;
   final List<StatusUpdate> history;
 
+  /// Priority chosen by staff, or null if they haven't set one yet.
+  final ReportPriority? staffPriority;
+
+  /// Students who tapped "Me too" because the issue affects them as well.
+  final List<String> supporters;
+
+  ReportPriority get priority =>
+      staffPriority ?? ReportPriority.defaultFor(category);
+
+  /// When staff aim to have this resolved, based on its priority.
+  DateTime get dueAt => createdAt.add(priority.target);
+
+  bool isOverdue(DateTime now) => status.isOpen && now.isAfter(dueAt);
+
+  bool isSupportedBy(String? uid) => uid != null && supporters.contains(uid);
+
   String get location => landmark.isEmpty ? building : '$building · $landmark';
 
   StatusUpdate get latestUpdate => history.last;
@@ -132,7 +168,11 @@ class Report {
 
   /// Returns a copy moved to [update]'s status, with the update added to
   /// the history.
-  Report withStatusUpdate(StatusUpdate update, {String? assignedTeam}) {
+  Report withStatusUpdate(
+    StatusUpdate update, {
+    String? assignedTeam,
+    ReportPriority? priority,
+  }) {
     return Report(
       id: id,
       reference: reference,
@@ -145,6 +185,8 @@ class Report {
       status: update.status,
       reporterId: reporterId,
       assignedTeam: assignedTeam ?? this.assignedTeam,
+      staffPriority: priority ?? staffPriority,
+      supporters: supporters,
       createdAt: createdAt,
       updatedAt: update.at,
       history: [...history, update],
@@ -165,6 +207,32 @@ class Report {
       status: status,
       reporterId: reporterId,
       assignedTeam: assignedTeam,
+      staffPriority: staffPriority,
+      supporters: supporters,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      history: history,
+    );
+  }
+
+  /// Returns a copy with [uid] added to or removed from the supporters.
+  Report withSupport(String uid, {required bool support}) {
+    return Report(
+      id: id,
+      reference: reference,
+      title: title,
+      description: description,
+      category: category,
+      building: building,
+      landmark: landmark,
+      photoPath: photoPath,
+      status: status,
+      reporterId: reporterId,
+      assignedTeam: assignedTeam,
+      staffPriority: staffPriority,
+      supporters: support
+          ? {...supporters, uid}.toList()
+          : supporters.where((s) => s != uid).toList(),
       createdAt: createdAt,
       updatedAt: updatedAt,
       history: history,

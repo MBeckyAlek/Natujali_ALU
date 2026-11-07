@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/firestore_report_repository.dart';
 import '../data/report_repository.dart';
+import '../models/achievements.dart';
 import '../models/report.dart';
 import '../models/report_filter.dart';
+import '../models/rewards.dart';
 import 'auth_providers.dart';
 
 /// Use FakeReportRepository() here instead to run the app without Firebase.
@@ -63,4 +65,19 @@ final campusFilterProvider =
 final filteredCampusReportsProvider = Provider<AsyncValue<List<Report>>>((ref) {
   final filter = ref.watch(campusFilterProvider);
   return ref.watch(reportsProvider).whenData(filter.apply);
+});
+
+/// The signed-in student's coins from resolved reports.
+final coinSummaryProvider = Provider<CoinSummary>(
+  (ref) => CoinSummary(ref.watch(myReportsProvider).value ?? const []),
+);
+
+/// The signed-in student's badges and progress towards them.
+final achievementsProvider = Provider<List<Achievement>>((ref) {
+  final uid = ref.watch(currentUserProvider)?.uid;
+  if (uid == null) return const [];
+  return achievementsFor(
+    uid: uid,
+    allReports: ref.watch(reportsProvider).value ?? const [],
+  );
 });

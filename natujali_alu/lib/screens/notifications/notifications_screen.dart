@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/report.dart';
+import '../../models/rewards.dart';
 import '../../providers/notification_providers.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/choice_pill.dart';
@@ -139,6 +140,17 @@ class _NotificationCard extends StatelessWidget {
                     '${report.title}: ${update.note}',
                     style: TextStyle(color: context.colors.muted),
                   ),
+                  if (update.status == ReportStatus.resolved &&
+                      coinsFor(report) > 0) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '+${coinsFor(report)} coins earned',
+                      style: TextStyle(
+                        color: context.colors.amberText,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   Text(
                     '${report.reference} · ${formatShortDateTime(update.at)}',

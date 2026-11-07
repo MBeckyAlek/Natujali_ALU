@@ -96,6 +96,7 @@ class FirestoreReportRepository implements ReportRepository {
     required ReportStatus status,
     required String note,
     String? assignedTeam,
+    ReportPriority? priority,
   }) async {
     final doc = _reports.doc(reportId);
     final current = await doc.get();
@@ -104,6 +105,7 @@ class FirestoreReportRepository implements ReportRepository {
     await doc.update({
       'status': status.name,
       'assignedTeam': team,
+      'priority': ?priority?.name,
       'updatedAt': now,
       // arrayUnion appends without rewriting the existing history.
       'history': FieldValue.arrayUnion([
@@ -117,6 +119,23 @@ class FirestoreReportRepository implements ReportRepository {
     });
   }
 
+  @override
+  Future<void> setSupport(
+    String reportId, {
+    required String uid,
+    required bool support,
+  }) {
+    // Only the supporters list changes, which is all the rules allow
+    // students to touch on someone else's report.
+    return _reports.doc(reportId).update({
+      'supporters': support
+          ? FieldValue.arrayUnion([uid])
+          : FieldValue.arrayRemove([uid]),
+    });
+  }
+
+  /// Priority is left out: students can't set it, so new reports start with
+  /// the category default until staff choose one.
   Map<String, dynamic> _toMap(Report report) {
     return {
       'reference': report.reference,
@@ -129,6 +148,7 @@ class FirestoreReportRepository implements ReportRepository {
       'status': report.status.name,
       'reporterId': report.reporterId,
       'assignedTeam': report.assignedTeam,
+      'supporters': report.supporters,
       'createdAt': Timestamp.fromDate(report.createdAt),
       'updatedAt': Timestamp.fromDate(report.updatedAt),
       'history': [
@@ -157,6 +177,11 @@ class FirestoreReportRepository implements ReportRepository {
       status: ReportStatus.values.byName(data['status'] as String),
       reporterId: data['reporterId'] as String,
       assignedTeam: data['assignedTeam'] as String?,
+      staffPriority: ReportPriority.values.asNameMap()[data['priority']],
+      supporters: [
+        for (final uid in data['supporters'] as List<dynamic>? ?? const [])
+          uid as String,
+      ],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       history: [

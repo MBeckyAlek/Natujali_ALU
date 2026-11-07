@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/error_messages.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/report.dart';
+import '../../models/rewards.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/report_providers.dart';
 import '../../widgets/app_card.dart';
@@ -13,6 +15,7 @@ import '../../widgets/report_photo.dart';
 import '../../widgets/screen_header.dart';
 import '../../widgets/status_chip.dart';
 import '../report_form/report_form_screen.dart';
+import '../rewards/rewards_screen.dart';
 import 'status_timeline_bar.dart';
 import 'track_report_screen.dart';
 
@@ -63,9 +66,9 @@ class ReportDetailsScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('${report.reference} was deleted.')),
       );
-    } catch (_) {
+    } catch (e) {
       messenger.showSnackBar(
-        const SnackBar(content: Text("Couldn't delete the report. Try again.")),
+        SnackBar(content: Text(describeError(e, action: 'delete the report'))),
       );
     }
   }
@@ -135,6 +138,18 @@ class ReportDetailsScreen extends ConsumerWidget {
               report.location,
               style: TextStyle(color: context.colors.muted),
             ),
+            if (!isOwn && user != null && report.status.isOpen) ...[
+              const SizedBox(height: 12),
+              _MeTooButton(report: report, uid: user.uid),
+            ] else if (isOwn && report.supporters.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${report.supporters.length} more '
+                '${report.supporters.length == 1 ? 'student says' : 'students say'} '
+                'this affects them too.',
+                style: TextStyle(color: context.colors.primary, fontSize: 13),
+              ),
+            ],
             const SizedBox(height: 16),
             AppCard(
               child: Column(
@@ -151,6 +166,34 @@ class ReportDetailsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            if (isOwn) ...[
+              const SizedBox(height: 12),
+              AppCard(
+                color: context.colors.amber,
+                onTap: () => RewardsScreen.open(context),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.monetization_on,
+                      color: context.colors.amberText,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        report.status == ReportStatus.resolved
+                            ? 'This report earned you ${coinsFor(report)} coins.'
+                            : 'Earn up to $maxCoinsPerReport coins when this '
+                                  'report is resolved.',
+                        style: TextStyle(
+                          color: context.colors.amberText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             Text('What was reported', style: textTheme.titleLarge),
             const SizedBox(height: 6),
@@ -242,6 +285,85 @@ class ReportDetailsScreen extends ConsumerWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// "Me too" on someone else's open report: shows that the issue affects
+/// more students, which helps staff prioritise, instead of a duplicate.
+class _MeTooButton extends ConsumerStatefulWidget {
+  const _MeTooButton({required this.report, required this.uid});
+
+  final Report report;
+  final String uid;
+
+  @override
+  ConsumerState<_MeTooButton> createState() => _MeTooButtonState();
+}
+
+class _MeTooButtonState extends ConsumerState<_MeTooButton> {
+  bool _isSaving = false;
+
+  Future<void> _toggle(bool support) async {
+    setState(() => _isSaving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(reportRepositoryProvider)
+          .setSupport(widget.report.id, uid: widget.uid, support: support);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            support
+                ? 'Added. Staff can see this affects more students.'
+                : 'Removed your "Me too".',
+          ),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(describeError(e, action: 'save your "Me too"'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final supported = widget.report.isSupportedBy(widget.uid);
+    final others = widget.report.supporters.length;
+    return AppCard(
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              others == 0
+                  ? 'Affected by this too? Let staff know instead of '
+                        'filing a duplicate.'
+                  : '$others ${others == 1 ? 'student has' : 'students have'} '
+                        'said this affects them too.',
+              style: TextStyle(color: context.colors.muted, fontSize: 13),
+            ),
+          ),
+          const SizedBox(width: 8),
+          supported
+              ? FilledButton.icon(
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+                  onPressed: _isSaving ? null : () => _toggle(false),
+                  icon: const Icon(Icons.check),
+                  label: const Text('Me too'),
+                )
+              : OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 44),
+                  ),
+                  onPressed: _isSaving ? null : () => _toggle(true),
+                  icon: const Icon(Icons.people_outline),
+                  label: const Text('Me too'),
+                ),
+        ],
       ),
     );
   }
