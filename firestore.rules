@@ -39,24 +39,62 @@ service cloud.firestore {
     match /reports/{reportId} {
       allow read: if isAluUser();
 
-      // New reports must belong to the sender and start as "submitted".
+      // New reports must belong to the sender, start as "submitted", have
+      // no supporters yet, and leave the priority for staff to set.
       allow create: if isAluUser()
         && isOwner(request.resource.data)
-        && request.resource.data.status == 'submitted';
+        && request.resource.data.status == 'submitted'
+        && !('priority' in request.resource.data)
+        && request.resource.data.get('supporters', []).size() == 0;
 
-      // Students may edit their own report only while it is still
-      // "submitted"; staff handle status changes.
-      allow update: if (isStaff()
-            && request.resource.data.reporterId == resource.data.reporterId)
-        || (isAluUser()
-            && isOwner(resource.data)
-            && resource.data.status == 'submitted'
-            && request.resource.data.status == 'submitted'
-            && request.resource.data.reporterId == resource.data.reporterId);
+      // Staff handle status, team and priority changes.
+      allow update: if isStaff()
+        && request.resource.data.reporterId == resource.data.reporterId;
+
+      // Students may edit the form fields of their own report while it is
+      // still "submitted".
+      allow update: if isAluUser()
+        && isOwner(resource.data)
+        && resource.data.status == 'submitted'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['title', 'description', 'category', 'building',
+                       'landmark', 'photoUrl', 'updatedAt']);
+
+      // "Me too": any student may add or remove only their own UID on an
+      // open report, and change nothing else.
+      allow update: if isAluUser()
+        && resource.data.status != 'resolved'
+        && isOwnSupportToggle();
 
       allow delete: if isAluUser()
         && isOwner(resource.data)
         && resource.data.status == 'submitted';
+    }
+
+    function isOwnSupportToggle() {
+      let before = resource.data.get('supporters', []).toSet();
+      let after = request.resource.data.get('supporters', []).toSet();
+      return request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['supporters'])
+        && after.difference(before).union(before.difference(after))
+             .hasOnly([request.auth.uid]);
+    }
+
+    // Campus announcements: everyone can read them; staff post and remove
+    // them. They are never edited, only replaced.
+    match /announcements/{announcementId} {
+      allow read: if isAluUser();
+      allow create: if isStaff()
+        && request.resource.data.keys().hasOnly(
+             ['title', 'message', 'building', 'postedBy', 'createdAt', 'expiresAt'])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 80
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 500
+        && request.resource.data.expiresAt is timestamp;
+      allow delete: if isStaff();
+      allow update: if false;
     }
 
     // Staff list: people can check their own entry; only admins (via the
